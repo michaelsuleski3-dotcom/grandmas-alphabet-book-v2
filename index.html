@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grandma's Alphabet Book</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+
+    <meta name="theme-color" content="#6B4423">
+</head>
+
+<body>
+
+    <!-- Opening Cover -->
+
+    <div id="cover-screen">
+
+        <div class="cover">
+
+            <div class="book-icon">📕</div>
+
+            <h1>Grandma's Alphabet Book</h1>
+
+            <p class="subtitle">
+                Everything in its place.
+            </p>
+
+            <button id="open-book">
+                Open Book
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Main Notebook -->
+
+    <div id="book-screen" class="hidden">
+
+        <header>
+
+            <h2>Grandma's Alphabet Book</h2>
+
+        </header>
+
+        <nav id="letter-tabs">
+            <!-- A–Z buttons go here -->
+        </nav>
+
+        <main>
+
+            <h3 id="current-letter">A</h3>
+
+            <div id="editor"
+                 contenteditable="true"
+                 spellcheck="true">
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
