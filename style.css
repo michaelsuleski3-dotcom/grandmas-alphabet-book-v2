@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.1.1 — Vintage Address Book
+   Version 2.1.2 — Vintage Address Book
    ===================================================== */
 
 * {
@@ -15,7 +15,7 @@
     --leather-light: #8a5836;
     --gold: #d8b36a;
     --paper: #fff9e9;
-    --paper-line: rgba(111, 67, 40, 0.14);
+    --paper-line: rgba(111, 67, 40, 0.16);
     --ink: #2f251d;
 }
 
@@ -30,6 +30,12 @@ body {
     color: var(--ink);
 }
 
+/* ---------- Hidden Elements ---------- */
+
+.hidden {
+    display: none !important;
+}
+
 /* ---------- Opening Cover ---------- */
 
 #cover-screen {
@@ -41,7 +47,6 @@ body {
     justify-content: center;
     padding: 24px;
     background: linear-gradient(135deg, #4c2b1a, #2f1b11);
-    perspective: 1600px;
     overflow: hidden;
 }
 
@@ -52,26 +57,31 @@ body {
     padding: 64px 34px 42px;
     text-align: center;
     color: #f8ead1;
-    border-radius: 22px 14px 14px 22px;
     border: 3px solid #2f1a10;
-    transform-origin: left center;
-    transform-style: preserve-3d;
+    border-radius: 22px 14px 14px 22px;
 
     background:
-        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.07), transparent 28%),
+        radial-gradient(
+            circle at 30% 20%,
+            rgba(255, 255, 255, 0.07),
+            transparent 28%
+        ),
         repeating-linear-gradient(
             115deg,
-            rgba(255,255,255,0.018) 0,
-            rgba(255,255,255,0.018) 2px,
-            rgba(0,0,0,0.025) 3px,
-            rgba(0,0,0,0.025) 5px
+            rgba(255, 255, 255, 0.018) 0,
+            rgba(255, 255, 255, 0.018) 2px,
+            rgba(0, 0, 0, 0.025) 3px,
+            rgba(0, 0, 0, 0.025) 5px
         ),
-        linear-gradient(145deg, var(--leather-light), var(--leather-dark));
+        linear-gradient(
+            145deg,
+            var(--leather-light),
+            var(--leather-dark)
+        );
 
     box-shadow:
-        0 24px 55px rgba(0,0,0,0.42),
-        inset 0 0 0 2px rgba(216,179,106,0.22),
-        inset 14px 0 18px rgba(0,0,0,0.16);
+        0 24px 55px rgba(0, 0, 0, 0.42),
+        inset 0 0 0 2px rgba(216, 179, 106, 0.22);
 }
 
 .cover::before {
@@ -83,16 +93,10 @@ body {
     pointer-events: none;
 }
 
-.cover::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 18px;
-    width: 7px;
-    background: rgba(46, 25, 15, 0.35);
-    box-shadow: 4px 0 6px rgba(255,255,255,0.05);
-}
+/*
+The old dark spine line has been removed.
+There is intentionally no .cover::after section.
+*/
 
 .book-icon {
     display: none;
@@ -106,7 +110,7 @@ body {
     font-size: clamp(2rem, 8vw, 2.65rem);
     line-height: 1.08;
     color: var(--gold);
-    text-shadow: 0 2px 3px rgba(0,0,0,0.35);
+    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
 }
 
 .subtitle {
@@ -123,16 +127,16 @@ body {
     position: relative;
     z-index: 1;
     min-width: 150px;
+    padding: 14px 25px;
     border: 1px solid #8d662e;
     border-radius: 999px;
-    padding: 14px 25px;
     font-size: 1rem;
     font-weight: 700;
     color: #3c2818;
     background: linear-gradient(#efd59a, #d7ad5d);
     box-shadow:
-        0 6px 14px rgba(0,0,0,0.28),
-        inset 0 1px 0 rgba(255,255,255,0.55);
+        0 6px 14px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
     cursor: pointer;
 }
 
@@ -140,50 +144,44 @@ body {
     transform: translateY(1px);
 }
 
-#cover-screen.opening .cover {
-    animation: openBookCover 800ms ease-in-out forwards;
+#open-book:disabled {
+    cursor: default;
 }
 
+/* ---------- Cover Opening Animation ---------- */
+
 #cover-screen.opening {
-    animation: fadeCoverScreen 800ms ease-in-out forwards;
+    background: transparent;
+    pointer-events: none;
+}
+
+#cover-screen.opening .cover {
+    animation: openBookCover 650ms ease-in-out forwards;
 }
 
 @keyframes openBookCover {
     0% {
-        transform: rotateY(0deg);
-    }
-
-    60% {
-        transform: rotateY(-105deg);
+        transform: translateX(0) scale(1);
+        opacity: 1;
     }
 
     100% {
-        transform: rotateY(-130deg);
+        transform: translateX(-115%) scale(0.96);
+        opacity: 0;
     }
 }
 
-@keyframes fadeCoverScreen {
-    0%,
-    55% {
-        background: linear-gradient(135deg, #4c2b1a, #2f1b11);
-    }
-
-    100% {
-        background: transparent;
-    }
-}
-
-/* ---------- Main Notebook ---------- */
-
-.hidden {
-    display: none !important;
-}
+/* ---------- Main Book Screen ---------- */
 
 #book-screen {
     min-height: 100vh;
     padding: 18px 14px 34px;
     background:
-        radial-gradient(circle at top, rgba(255,255,255,0.08), transparent 30%),
+        radial-gradient(
+            circle at top,
+            rgba(255, 255, 255, 0.08),
+            transparent 30%
+        ),
         linear-gradient(135deg, #4c2b1a, #2f1b11);
 }
 
@@ -191,10 +189,10 @@ header {
     max-width: 760px;
     margin: 0 auto 14px;
     padding: 13px 18px;
-    border: 1px solid rgba(216,179,106,0.42);
+    border: 1px solid rgba(216, 179, 106, 0.42);
     border-radius: 14px;
     background: linear-gradient(145deg, #74472b, #51301e);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
 }
 
 header h2 {
@@ -223,7 +221,7 @@ header h2 {
     font-weight: 700;
     color: #49311f;
     background: linear-gradient(#f3dfad, #d5b474);
-    box-shadow: 0 3px 7px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
     cursor: pointer;
 }
 
@@ -234,13 +232,13 @@ header h2 {
     transform: translateY(2px);
 }
 
-/* ---------- Paper ---------- */
+/* ---------- Cream Paper ---------- */
 
 main {
     position: relative;
     max-width: 760px;
-    margin: 0 auto;
     min-height: 72vh;
+    margin: 0 auto;
     padding: 24px 18px 48px 56px;
     border: 1px solid #d7c7a6;
     border-radius: 8px 16px 16px 8px;
@@ -262,8 +260,8 @@ main {
         );
 
     box-shadow:
-        0 16px 36px rgba(0,0,0,0.28),
-        inset 7px 0 12px rgba(84,53,31,0.08);
+        0 16px 36px rgba(0, 0, 0, 0.28),
+        inset 7px 0 12px rgba(84, 53, 31, 0.08);
 }
 
 main::before {
@@ -273,10 +271,15 @@ main::before {
     top: 24px;
     bottom: 24px;
     width: 12px;
-    background:
-        radial-gradient(circle, #8a6a4a 0 3px, transparent 4px)
-        center top / 12px 32px repeat-y;
     opacity: 0.55;
+
+    background:
+        radial-gradient(
+            circle,
+            #8a6a4a 0 3px,
+            transparent 4px
+        )
+        center top / 12px 32px repeat-y;
 }
 
 #current-letter {
@@ -286,6 +289,8 @@ main::before {
     line-height: 32px;
     color: #70452b;
 }
+
+/* ---------- Writing Area ---------- */
 
 #editor {
     min-height: 62vh;
@@ -300,9 +305,23 @@ main::before {
     caret-color: #30251e;
 }
 
+#editor:empty::before {
+    content: "Tap here to begin writing...";
+    color: rgba(47, 37, 29, 0.42);
+    pointer-events: none;
+}
+
 /* ---------- Small Screens ---------- */
 
 @media (max-width: 560px) {
+    #cover-screen {
+        padding: 18px;
+    }
+
+    .cover {
+        min-height: 500px;
+    }
+
     #letter-tabs {
         grid-template-columns: repeat(7, minmax(0, 1fr));
     }
@@ -317,8 +336,7 @@ main::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    #cover-screen.opening .cover,
-    #cover-screen.opening {
+    #cover-screen.opening .cover {
         animation-duration: 1ms;
     }
 }

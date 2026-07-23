@@ -1,9 +1,11 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.0.0
+   Version 2.1.2
    ===================================================== */
 
-const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+"use strict";
+
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const coverScreen = document.getElementById("cover-screen");
 const bookScreen = document.getElementById("book-screen");
@@ -13,51 +15,55 @@ const currentLetterHeading = document.getElementById("current-letter");
 const editor = document.getElementById("editor");
 
 let currentLetter = "A";
+let saveTimer = null;
 
-const savedNotes = JSON.parse(
-    localStorage.getItem("grandmasAlphabetBookV2") || "{}"
-);
+/* ---------- Storage ---------- */
 
-letters.forEach((letter) => {
-    if (savedNotes[letter] === undefined) {
-        savedNotes[letter] = "";
+function getStorageKey(letter) {
+    return `grandmas-alphabet-book-v2-${letter}`;
+}
+
+function loadLetter(letter) {
+    try {
+        return localStorage.getItem(getStorageKey(letter)) || "";
+    } catch (error) {
+        console.error("Unable to load saved information:", error);
+        return "";
     }
-});
-
-function saveNotes() {
-    savedNotes[currentLetter] = editor.innerHTML;
-
-    localStorage.setItem(
-        "grandmasAlphabetBookV2",
-        JSON.stringify(savedNotes)
-    );
 }
 
-function openLetter(letter) {
-    saveNotes();
-
-    currentLetter = letter;
-    currentLetterHeading.textContent = letter;
-    editor.innerHTML = savedNotes[letter] || "";
-
-    document.querySelectorAll(".letter-tab").forEach((button) => {
-        button.classList.toggle(
-            "active",
-            button.dataset.letter === letter
+function saveCurrentLetter() {
+    try {
+        localStorage.setItem(
+            getStorageKey(currentLetter),
+            editor.innerHTML
         );
-    });
-
-    editor.focus();
+    } catch (error) {
+        console.error("Unable to save information:", error);
+    }
 }
+
+function scheduleSave() {
+    window.clearTimeout(saveTimer);
+
+    saveTimer = window.setTimeout(() => {
+        saveCurrentLetter();
+    }, 250);
+}
+
+/* ---------- Letter Tabs ---------- */
 
 function createLetterTabs() {
-    letters.forEach((letter) => {
+    letterTabs.innerHTML = "";
+
+    alphabet.forEach((letter) => {
         const button = document.createElement("button");
 
         button.type = "button";
         button.className = "letter-tab";
-        button.dataset.letter = letter;
         button.textContent = letter;
+        button.dataset.letter = letter;
+        button.setAttribute("aria-label", `Open letter ${letter}`);
 
         button.addEventListener("click", () => {
             openLetter(letter);
@@ -67,23 +73,80 @@ function createLetterTabs() {
     });
 }
 
-oopenBookButton.addEventListener("click", () => {
+function updateActiveTab() {
+    const tabs = document.querySelectorAll(".letter-tab");
+
+    tabs.forEach((tab) => {
+        const isActive = tab.dataset.letter === currentLetter;
+
+        tab.classList.toggle("active", isActive);
+        tab.setAttribute("aria-current", isActive ? "page" : "false");
+    });
+}
+
+function openLetter(letter) {
+    if (!alphabet.includes(letter)) {
+        return;
+    }
+
+    saveCurrentLetter();
+
+    currentLetter = letter;
+    currentLetterHeading.textContent = letter;
+    editor.innerHTML = loadLetter(letter);
+
+    updateActiveTab();
+}
+
+/* ---------- Open the Book ---------- */
+
+function openBook() {
     openBookButton.disabled = true;
 
+    /*
+    Reveal the cream paper first so it appears behind the cover
+    while the cover moves away.
+    */
     bookScreen.classList.remove("hidden");
-    coverScreen.classList.add("opening");
+
+    /*
+    Allow the browser to display the book screen before beginning
+    the animation.
+    */
+    window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+            coverScreen.classList.add("opening");
+        });
+    });
 
     window.setTimeout(() => {
         coverScreen.classList.add("hidden");
         coverScreen.classList.remove("opening");
+
         openLetter(currentLetter);
+        editor.focus();
+
         openBookButton.disabled = false;
-    }, 800);
+    }, 650);
+}
+
+/* ---------- Events ---------- */
+
+openBookButton.addEventListener("click", openBook);
+
+editor.addEventListener("input", scheduleSave);
+
+window.addEventListener("beforeunload", () => {
+    saveCurrentLetter();
 });
 
-editor.addEventListener("input", saveNotes);
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        saveCurrentLetter();
+    }
+});
 
-window.addEventListener("beforeunload", saveNotes);
+/* ---------- Start the App ---------- */
 
 createLetterTabs();
-openLetter("A");
+openLetter(currentLetter);
