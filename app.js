@@ -68,9 +68,18 @@ function createLetterTabs() {
 }
 
 openBookButton.addEventListener("click", () => {
-    coverScreen.classList.add("hidden");
-    bookScreen.classList.remove("hidden");
-    openLetter(currentLetter);
+    openBookButton.disabled = true;
+    coverScreen.classList.add("opening");
+
+    window.setTimeout(() => {
+        coverScreen.classList.add("hidden");
+        coverScreen.classList.remove("opening");
+
+        bookScreen.classList.remove("hidden");
+        openLetter(currentLetter);
+
+        openBookButton.disabled = false;
+    }, 650);
 });
 
 editor.addEventListener("input", saveNotes);
