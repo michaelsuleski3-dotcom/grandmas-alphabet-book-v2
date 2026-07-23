@@ -252,6 +252,12 @@ main {
             rgba(186, 84, 76, 0.22) 44px,
             transparent 45px
         ),
+        linear-gradient(
+            to bottom,
+            var(--paper) 0,
+            var(--paper) 80px,
+            transparent 80px
+        ),
         repeating-linear-gradient(
             to bottom,
             var(--paper) 0,
@@ -259,34 +265,24 @@ main {
             var(--paper-line) 32px
         );
 
+    background-position:
+        0 0,
+        0 0,
+        0 80px;
+
     box-shadow:
         0 16px 36px rgba(0, 0, 0, 0.28),
         inset 7px 0 12px rgba(84, 53, 31, 0.08);
 }
 
-main::before {
-    content: "";
-    position: absolute;
-    left: 18px;
-    top: 24px;
-    bottom: 24px;
-    width: 12px;
-    opacity: 0.55;
-
-    background:
-        radial-gradient(
-            circle,
-            #8a6a4a 0 3px,
-            transparent 4px
-        )
-        center top / 12px 32px repeat-y;
-}
-
 #current-letter {
-    margin-bottom: 8px;
+    height: 56px;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 2.2rem;
-    line-height: 32px;
+    font-size: 2.6rem;
+    line-height: 1;
     color: #70452b;
 }
 
