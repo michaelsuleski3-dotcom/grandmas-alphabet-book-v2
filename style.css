@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.2.1 — A–E Vintage Tab Prototype
+   Version 2.2.2 — Vintage Side Tabs A–Z
    ===================================================== */
 
 * {
@@ -346,7 +346,7 @@ main::before {
 }
 
 /* =====================================================
-   SIDE ALPHABET TABS
+   VINTAGE SIDE ALPHABET TABS A–Z
    ===================================================== */
 
 #letter-tabs {
@@ -370,17 +370,20 @@ main::before {
 .letter-tab {
     position: relative;
 
-    width: 35px;
+    width: 30px;
     min-height: 20px;
+
+    margin-left: 5px;
+    padding-left: 7px;
 
     border:
         1px solid
-        #8f6b42;
+        #aa926a;
 
     border-left: none;
 
     border-radius:
-        0 7px 7px 0;
+        0 12px 12px 0;
 
     font-family:
         Georgia,
@@ -390,41 +393,7 @@ main::before {
     font-size: 0.69rem;
     font-weight: 700;
     line-height: 1;
-
-    color: #49311f;
-
-    background:
-        linear-gradient(
-            to right,
-            #d4b16e,
-            #f1dda8
-        );
-
-    box-shadow:
-        3px 2px 5px rgba(0, 0, 0, 0.18);
-
-    cursor: pointer;
-}
-
-/* =====================================================
-   A–E VINTAGE TAB PROTOTYPE
-   ===================================================== */
-
-/*
-Only A through E receive the new design.
-The remaining letters keep the existing appearance.
-*/
-
-.letter-tab:nth-child(-n + 5) {
-    width: 30px;
-
-    margin-left: 5px;
-
-    border-color: #aa926a;
-    border-left: none;
-
-    border-radius:
-        0 12px 12px 0;
+    text-align: center;
 
     color: #594631;
 
@@ -439,97 +408,42 @@ The remaining letters keep the existing appearance.
     box-shadow:
         2px 2px 3px rgba(62, 39, 23, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.38);
+
+    cursor: pointer;
 }
 
 /*
-Very slight horizontal staggering.
-This is intentionally subtle.
+Subtle repeating stagger.
+This keeps the edge organic without looking uneven.
 */
 
-.letter-tab:nth-child(1) {
+.letter-tab:nth-child(5n + 1) {
     transform: translateX(0);
 }
 
-.letter-tab:nth-child(2) {
+.letter-tab:nth-child(5n + 2) {
     transform: translateX(1px);
 }
 
-.letter-tab:nth-child(3) {
+.letter-tab:nth-child(5n + 3) {
     transform: translateX(2px);
 }
 
-.letter-tab:nth-child(4) {
+.letter-tab:nth-child(5n + 4) {
     transform: translateX(1px);
 }
 
-.letter-tab:nth-child(5) {
+.letter-tab:nth-child(5n + 5) {
     transform: translateX(0);
 }
 
 /*
-The letters sit toward the rounded outside edge,
-like printing on a real tab.
+The active tab blends into the current cream page.
 */
-
-.letter-tab:nth-child(-n + 5) {
-    padding-left: 7px;
-    text-align: center;
-}
-
-/*
-The active A–E tab blends into the paper rather
-than looking like a dark button.
-*/
-
-.letter-tab:nth-child(-n + 5).active {
-    width: 34px;
-    margin-left: 1px;
-
-    color: #5f4229;
-
-    background:
-        linear-gradient(
-            to right,
-            var(--paper) 0%,
-            #fff7e4 72%,
-            #ead6aa 100%
-        );
-
-    border-color: #b9a47c;
-    border-left: 1px solid var(--paper);
-
-    box-shadow:
-        3px 2px 4px rgba(62, 39, 23, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-/* Existing active style for F–Z */
 
 .letter-tab.active {
-    width: 41px;
-
-    color: #fff7e6;
-
-    background:
-        linear-gradient(
-            to right,
-            #5a3421,
-            #8a5836
-        );
-
-    border-color: #3b2115;
-
-    box-shadow:
-        4px 3px 7px rgba(0, 0, 0, 0.3);
-}
-
-/*
-Reapply the softer A–E active style after the general
-active rule so it takes priority.
-*/
-
-.letter-tab:nth-child(-n + 5).active {
     width: 34px;
+    margin-left: 1px;
 
     color: #5f4229;
 
@@ -626,20 +540,13 @@ active rule so it takes priority.
     }
 
     .letter-tab {
-        width: 32px;
+        width: 28px;
+        margin-left: 4px;
+
         font-size: 0.66rem;
     }
 
     .letter-tab.active {
-        width: 37px;
-    }
-
-    .letter-tab:nth-child(-n + 5) {
-        width: 28px;
-        margin-left: 4px;
-    }
-
-    .letter-tab:nth-child(-n + 5).active {
         width: 32px;
         margin-left: 0;
     }
