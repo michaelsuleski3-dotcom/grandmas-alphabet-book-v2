@@ -258,14 +258,60 @@ header h2 {
     margin: 0 auto;
 
     padding-right: 36px;
+}/* =====================================================
+   STACKED PAGE THICKNESS
+   ===================================================== */
+
+.book-layout::before,
+.book-layout::after {
+    content: "";
+
+    position: absolute;
+
+    left: 5px;
+    right: 40px;
+
+    border: 1px solid #cdbd9d;
+    border-radius: 8px 14px 14px 8px;
+
+    pointer-events: none;
+}
+
+/* Bottom page layer */
+
+.book-layout::before {
+    top: 8px;
+    bottom: -8px;
+
+    background: #e5d8bd;
+
+    box-shadow:
+        0 12px 20px rgba(0, 0, 0, 0.18);
+
+    z-index: 0;
+}
+
+/* Middle page layer */
+
+.book-layout::after {
+    top: 4px;
+    bottom: -4px;
+
+    background: #f0e5ce;
+
+    box-shadow:
+        0 6px 10px rgba(67, 43, 27, 0.12);
+
+    z-index: 1;
 }
 
 /* =====================================================
    CREAM PAPER
    ===================================================== */
 
-main {
+mmain {
     position: relative;
+    z-index: 2;
 
     width: 100%;
     min-height: 720px;
@@ -560,7 +606,19 @@ The active tab blends into the current cream page.
     .book-layout {
         width: 100%;
         padding-right: 31px;
-    }
+    .book-layout::before,
+.book-layout::after {
+    right: 35px;
+}
+
+.book-layout::before {
+    bottom: -6px;
+}
+
+.book-layout::after {
+    bottom: -3px;
+}
+}
 
     main {
         min-height: 700px;
