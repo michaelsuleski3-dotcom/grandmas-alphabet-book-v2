@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.2.2 — Vintage Side Tabs A–Z
+   Version 2.3.0 — Stacked Vintage Pages
    ===================================================== */
 
 * {
@@ -16,7 +16,9 @@
     --gold: #d8b36a;
 
     --paper: #fff9e9;
-    --paper-line: rgba(111, 67, 40, 0.16);
+    --paper-middle: #eadcc0;
+    --paper-bottom: #d8c7a6;
+    --paper-line: rgba(92, 116, 137, 0.25);
     --ink: #2f251d;
 }
 
@@ -42,12 +44,16 @@ body {
         );
 }
 
+button {
+    font: inherit;
+}
+
 .hidden {
     display: none !important;
 }
 
 /* =====================================================
-   SIMPLE COVER
+   SIMPLE LEATHER COVER
    ===================================================== */
 
 #cover-screen {
@@ -196,7 +202,7 @@ body {
 
 #book-screen {
     min-height: 100vh;
-    padding: 18px 12px 34px;
+    padding: 18px 12px 42px;
 
     background:
         radial-gradient(
@@ -258,7 +264,9 @@ header h2 {
     margin: 0 auto;
 
     padding-right: 36px;
-}/* =====================================================
+}
+
+/* =====================================================
    STACKED PAGE THICKNESS
    ===================================================== */
 
@@ -268,10 +276,10 @@ header h2 {
 
     position: absolute;
 
-    left: 5px;
-    right: 40px;
+    left: 7px;
+    right: 42px;
 
-    border: 1px solid #cdbd9d;
+    border: 1px solid #bfae8e;
     border-radius: 8px 14px 14px 8px;
 
     pointer-events: none;
@@ -280,13 +288,18 @@ header h2 {
 /* Bottom page layer */
 
 .book-layout::before {
-    top: 8px;
-    bottom: -8px;
+    top: 12px;
+    bottom: -14px;
 
-    background: #e5d8bd;
+    background:
+        linear-gradient(
+            to bottom,
+            #dfd0b3,
+            var(--paper-bottom)
+        );
 
     box-shadow:
-        0 12px 20px rgba(0, 0, 0, 0.18);
+        0 16px 24px rgba(0, 0, 0, 0.28);
 
     z-index: 0;
 }
@@ -294,22 +307,27 @@ header h2 {
 /* Middle page layer */
 
 .book-layout::after {
-    top: 4px;
-    bottom: -4px;
+    top: 6px;
+    bottom: -7px;
 
-    background: #f0e5ce;
+    background:
+        linear-gradient(
+            to bottom,
+            #f1e6d0,
+            var(--paper-middle)
+        );
 
     box-shadow:
-        0 6px 10px rgba(67, 43, 27, 0.12);
+        0 8px 13px rgba(67, 43, 27, 0.2);
 
     z-index: 1;
 }
 
 /* =====================================================
-   CREAM PAPER
+   CREAM RULED PAPER
    ===================================================== */
 
-mmain {
+main {
     position: relative;
     z-index: 2;
 
@@ -321,13 +339,19 @@ mmain {
     border: 1px solid #d7c7a6;
     border-radius: 8px 14px 14px 8px;
 
+    /*
+    Layer 1: red vertical margin line
+    Layer 2: blank cream heading area
+    Layer 3: repeating horizontal writing lines
+    */
+
     background:
         linear-gradient(
             to right,
             transparent 0,
             transparent 42px,
-            rgba(186, 84, 76, 0.22) 43px,
-            rgba(186, 84, 76, 0.22) 44px,
+            rgba(178, 83, 76, 0.24) 43px,
+            rgba(178, 83, 76, 0.24) 44px,
             transparent 45px
         ),
         linear-gradient(
@@ -340,6 +364,7 @@ mmain {
             to bottom,
             var(--paper) 0,
             var(--paper) 31px,
+            var(--paper-line) 31px,
             var(--paper-line) 32px
         );
 
@@ -352,6 +377,8 @@ mmain {
         0 16px 36px rgba(0, 0, 0, 0.28),
         inset 7px 0 12px rgba(84, 53, 31, 0.08);
 }
+
+/* Binder holes */
 
 main::before {
     content: "";
@@ -371,14 +398,13 @@ main::before {
             transparent 4px
         )
         center top / 12px 32px repeat-y;
-}/* =====================================================
+
+    pointer-events: none;
+}
+
+/* =====================================================
    SUBTLE SCALLOPED PAGE EDGE
    ===================================================== */
-
-/*
-Creates the appearance of stacked, die-cut page edges.
-The scallops are intentionally soft and understated.
-*/
 
 main::after {
     content: "";
@@ -409,6 +435,10 @@ main::after {
     pointer-events: none;
     z-index: 2;
 }
+
+/* =====================================================
+   PAGE LETTER HEADING
+   ===================================================== */
 
 #current-letter {
     height: 56px;
@@ -495,10 +525,7 @@ main::after {
     cursor: pointer;
 }
 
-/*
-Subtle repeating stagger.
-This keeps the edge organic without looking uneven.
-*/
+/* Subtle repeating tab stagger */
 
 .letter-tab:nth-child(5n + 1) {
     transform: translateX(0);
@@ -520,9 +547,7 @@ This keeps the edge organic without looking uneven.
     transform: translateX(0);
 }
 
-/*
-The active tab blends into the current cream page.
-*/
+/* Active tab blends into the paper */
 
 .letter-tab.active {
     width: 34px;
@@ -551,6 +576,9 @@ The active tab blends into the current cream page.
    ===================================================== */
 
 #editor {
+    position: relative;
+    z-index: 3;
+
     min-height: 620px;
     padding: 0 6px 64px 0;
 
@@ -566,6 +594,8 @@ The active tab blends into the current cream page.
 
     color: #30251e;
     caret-color: #30251e;
+
+    background: transparent;
 
     overflow-wrap: anywhere;
     white-space: pre-wrap;
@@ -596,6 +626,7 @@ The active tab blends into the current cream page.
     #book-screen {
         padding-left: 6px;
         padding-right: 6px;
+        padding-bottom: 36px;
     }
 
     header {
@@ -606,42 +637,43 @@ The active tab blends into the current cream page.
     .book-layout {
         width: 100%;
         padding-right: 31px;
+    }
+
     .book-layout::before,
-.book-layout::after {
-    right: 35px;
-}
+    .book-layout::after {
+        left: 5px;
+        right: 37px;
+    }
 
-.book-layout::before {
-    bottom: -6px;
-}
+    .book-layout::before {
+        top: 10px;
+        bottom: -11px;
+    }
 
-.book-layout::after {
-    bottom: -3px;
-}
-}
+    .book-layout::after {
+        top: 5px;
+        bottom: -6px;
+    }
 
     main {
         min-height: 700px;
+
         padding-left: 48px;
         padding-right: 12px;
-        main::after {
-    right: -7px;
-    width: 12px;
-
-    background-size: 12px 26px;
-}
     }
 
     main::before {
         left: 15px;
     }
-    main::after {
-    right: -7px;
-    width: 12px;
 
-    background-size:
-        12px 26px;
-}
+    main::after {
+        right: -7px;
+        width: 12px;
+
+        background-size:
+            12px 26px;
+    }
+
     #letter-tabs {
         width: 32px;
     }
