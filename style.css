@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.1.6 — Segmented Flexible Cover
+   Version 2.2.0 — Side Alphabet Tabs
    ===================================================== */
 
 * {
@@ -14,6 +14,7 @@
     --leather: #6f4328;
     --leather-light: #8a5836;
     --gold: #d8b36a;
+
     --paper: #fff9e9;
     --paper-line: rgba(111, 67, 40, 0.16);
     --ink: #2f251d;
@@ -41,8 +42,12 @@ body {
         );
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* =====================================================
-   COVER SCREEN
+   SIMPLE COVER
    ===================================================== */
 
 #cover-screen {
@@ -55,7 +60,6 @@ body {
     justify-content: center;
 
     padding: 24px;
-    overflow: hidden;
 
     background:
         linear-gradient(
@@ -63,46 +67,21 @@ body {
             #4c2b1a,
             #2f1b11
         );
-
-    perspective: 1700px;
-    perspective-origin: 42% center;
 }
 
-/*
-The entire cover and its flexible sections live inside
-this stage. The stage rotates around the left edge.
-*/
-
-.cover-stage {
+.cover {
     position: relative;
 
     width: min(360px, 94vw);
     min-height: 520px;
 
-    transform-origin: left center;
-    transform-style: preserve-3d;
-
-    will-change: transform, opacity;
-}
-
-/* =====================================================
-   MAIN LEATHER COVER
-   ===================================================== */
-
-.cover {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-
-    padding: 64px 34px 42px;
+    padding: 74px 34px 44px;
 
     text-align: center;
     color: #f8ead1;
 
     border: 3px solid #2f1a10;
     border-radius: 22px 14px 14px 22px;
-
-    overflow: hidden;
 
     background:
         radial-gradient(
@@ -135,7 +114,6 @@ this stage. The stage rotates around the left edge.
 
     position: absolute;
     inset: 12px;
-    z-index: 1;
 
     border:
         1px dashed
@@ -146,52 +124,19 @@ this stage. The stage rotates around the left edge.
     pointer-events: none;
 }
 
-/*
-A soft highlight travels across the cover while it opens.
-*/
-
-.cover::after {
-    content: "";
-
-    position: absolute;
-    top: 0;
-    right: -35%;
-    bottom: 0;
-
-    width: 48%;
-    z-index: 1;
-
-    background:
-        linear-gradient(
-            to left,
-            transparent,
-            rgba(255, 227, 181, 0.18),
-            rgba(255, 255, 255, 0.04),
-            transparent
-        );
-
-    opacity: 0;
-    transform: skewX(-10deg);
-
-    pointer-events: none;
-}
-
-.book-icon {
-    display: none;
-}
-
 .cover h1 {
     position: relative;
-    z-index: 3;
 
-    margin-top: 54px;
+    margin-top: 58px;
 
     font-family:
         Georgia,
         "Times New Roman",
         serif;
 
-    font-size: clamp(2rem, 8vw, 2.65rem);
+    font-size:
+        clamp(2rem, 8vw, 2.65rem);
+
     line-height: 1.08;
 
     color: var(--gold);
@@ -202,9 +147,8 @@ A soft highlight travels across the cover while it opens.
 
 .subtitle {
     position: relative;
-    z-index: 3;
 
-    margin: 22px 0 54px;
+    margin: 24px 0 58px;
 
     font-family:
         Georgia,
@@ -219,7 +163,6 @@ A soft highlight travels across the cover while it opens.
 
 #open-book {
     position: relative;
-    z-index: 4;
 
     min-width: 150px;
     padding: 14px 25px;
@@ -249,434 +192,13 @@ A soft highlight travels across the cover while it opens.
     transform: translateY(1px);
 }
 
-#open-book:disabled {
-    cursor: default;
-}
-
-/* =====================================================
-   FLEXIBLE COVER SECTIONS
-   ===================================================== */
-
-/*
-These narrow sections sit over the right portion of the
-cover. They rotate by different amounts during opening,
-which produces a visible curl.
-*/
-
-.cover-curl {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-
-    overflow: hidden;
-
-    border-radius: 22px 14px 14px 22px;
-
-    pointer-events: none;
-
-    transform-style: preserve-3d;
-}
-
-.cover-curl span {
-    position: absolute;
-    top: 3px;
-    bottom: 3px;
-
-    width: 12.5%;
-
-    transform-origin: left center;
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-
-    opacity: 0;
-
-    background:
-        repeating-linear-gradient(
-            115deg,
-            rgba(255, 255, 255, 0.025) 0,
-            rgba(255, 255, 255, 0.025) 2px,
-            rgba(0, 0, 0, 0.035) 3px,
-            rgba(0, 0, 0, 0.035) 5px
-        ),
-        linear-gradient(
-            145deg,
-            #8a5836,
-            #3f2417
-        );
-
-    border-right:
-        1px solid
-        rgba(34, 18, 10, 0.13);
-
-    box-shadow:
-        inset -8px 0 12px
-        rgba(0, 0, 0, 0.08);
-
-    will-change: transform, opacity;
-}
-
-.cover-curl span:nth-child(1) {
-    left: 0%;
-}
-
-.cover-curl span:nth-child(2) {
-    left: 12.5%;
-}
-
-.cover-curl span:nth-child(3) {
-    left: 25%;
-}
-
-.cover-curl span:nth-child(4) {
-    left: 37.5%;
-}
-
-.cover-curl span:nth-child(5) {
-    left: 50%;
-}
-
-.cover-curl span:nth-child(6) {
-    left: 62.5%;
-}
-
-.cover-curl span:nth-child(7) {
-    left: 75%;
-}
-
-.cover-curl span:nth-child(8) {
-    left: 87.5%;
-}
-
-/* =====================================================
-   REALISTIC OPENING ANIMATION
-   ===================================================== */
-
-body.book-opening #cover-screen {
-    background: transparent;
-    pointer-events: none;
-}
-
-/*
-The whole cover swings around its left hinge.
-*/
-
-body.book-opening .cover-stage {
-    animation:
-        swingCoverOpen 1150ms
-        cubic-bezier(0.26, 0.03, 0.15, 1)
-        forwards;
-}
-
-/*
-The flat base cover changes shape slightly.
-*/
-
-body.book-opening .cover {
-    animation:
-        softenMainCover 1150ms
-        ease-in-out
-        forwards;
-}
-
-/*
-The highlight crosses the leather during the bend.
-*/
-
-body.book-opening .cover::after {
-    animation:
-        movingLeatherHighlight 800ms
-        ease-out
-        forwards;
-}
-
-/*
-Each narrow section curls by a different amount.
-The rightmost section bends the most.
-*/
-
-body.book-opening .cover-curl span {
-    opacity: 1;
-
-    animation-duration: 720ms;
-    animation-timing-function:
-        cubic-bezier(0.32, 0, 0.18, 1);
-    animation-fill-mode: forwards;
-}
-
-body.book-opening .cover-curl span:nth-child(1) {
-    animation-name: curlSection1;
-}
-
-body.book-opening .cover-curl span:nth-child(2) {
-    animation-name: curlSection2;
-}
-
-body.book-opening .cover-curl span:nth-child(3) {
-    animation-name: curlSection3;
-}
-
-body.book-opening .cover-curl span:nth-child(4) {
-    animation-name: curlSection4;
-}
-
-body.book-opening .cover-curl span:nth-child(5) {
-    animation-name: curlSection5;
-}
-
-body.book-opening .cover-curl span:nth-child(6) {
-    animation-name: curlSection6;
-}
-
-body.book-opening .cover-curl span:nth-child(7) {
-    animation-name: curlSection7;
-}
-
-body.book-opening .cover-curl span:nth-child(8) {
-    animation-name: curlSection8;
-}
-
-/* Whole cover movement */
-
-@keyframes swingCoverOpen {
-    0% {
-        transform:
-            rotateY(0deg)
-            translateZ(0);
-
-        opacity: 1;
-    }
-
-    15% {
-        transform:
-            rotateY(-9deg)
-            translateZ(8px);
-
-        opacity: 1;
-    }
-
-    42% {
-        transform:
-            rotateY(-58deg)
-            translateZ(15px);
-
-        opacity: 1;
-    }
-
-    72% {
-        transform:
-            rotateY(-128deg)
-            translateZ(8px);
-
-        opacity: 1;
-    }
-
-    100% {
-        transform:
-            rotateY(-178deg)
-            translateZ(0);
-
-        opacity: 0;
-    }
-}
-
-/* Main cover softness */
-
-@keyframes softenMainCover {
-    0% {
-        border-radius:
-            22px 14px 14px 22px;
-
-        box-shadow:
-            0 24px 55px rgba(0, 0, 0, 0.42),
-            inset 0 0 0 2px
-            rgba(216, 179, 106, 0.22);
-    }
-
-    35% {
-        border-radius:
-            22px 32px 32px 22px;
-
-        box-shadow:
-            24px 24px 46px rgba(0, 0, 0, 0.34),
-            inset -20px 0 26px
-            rgba(255, 224, 174, 0.07);
-    }
-
-    65% {
-        border-radius:
-            22px 38px 38px 22px;
-
-        box-shadow:
-            18px 18px 34px rgba(0, 0, 0, 0.25),
-            inset -30px 0 30px
-            rgba(255, 224, 174, 0.08);
-    }
-
-    100% {
-        border-radius:
-            22px 14px 14px 22px;
-
-        box-shadow:
-            4px 8px 14px rgba(0, 0, 0, 0.1);
-    }
-}
-
-/* Moving highlight */
-
-@keyframes movingLeatherHighlight {
-    0% {
-        right: -45%;
-        opacity: 0;
-    }
-
-    25% {
-        opacity: 0.2;
-    }
-
-    60% {
-        right: 45%;
-        opacity: 0.75;
-    }
-
-    100% {
-        right: 105%;
-        opacity: 0;
-    }
-}
-
-/*
-The first sections barely bend.
-The right edge bends strongly.
-*/
-
-@keyframes curlSection1 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-1deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-@keyframes curlSection2 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-3deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-@keyframes curlSection3 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-6deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-@keyframes curlSection4 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-10deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-@keyframes curlSection5 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-16deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-@keyframes curlSection6 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-24deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-@keyframes curlSection7 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-34deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-@keyframes curlSection8 {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    52% {
-        transform: rotateY(-48deg);
-    }
-
-    100% {
-        transform: rotateY(0deg);
-    }
-}
-
-/* Hide cover after opening */
-
-body.book-open #cover-screen {
-    display: none;
-}
-
 /* =====================================================
    MAIN BOOK SCREEN
    ===================================================== */
 
 #book-screen {
     min-height: 100vh;
-    padding: 18px 14px 34px;
-
-    visibility: hidden;
-    opacity: 0;
+    padding: 18px 12px 34px;
 
     background:
         radial-gradient(
@@ -691,20 +213,10 @@ body.book-open #cover-screen {
         );
 }
 
-/*
-The page becomes visible immediately behind the cover.
-*/
-
-body.book-opening #book-screen,
-body.book-open #book-screen {
-    visibility: visible;
-    opacity: 1;
-}
-
 /* ---------- Header ---------- */
 
 header {
-    max-width: 760px;
+    max-width: 810px;
     margin: 0 auto 14px;
     padding: 13px 18px;
 
@@ -740,60 +252,20 @@ header h2 {
 }
 
 /* =====================================================
-   A–Z TABS
+   BOOK AND SIDE TABS
    ===================================================== */
 
-#letter-tabs {
-    max-width: 760px;
-    margin: 0 auto 14px;
+.book-layout {
+    position: relative;
 
-    display: grid;
-    grid-template-columns:
-        repeat(13, minmax(0, 1fr));
+    width: min(810px, calc(100vw - 24px));
+    margin: 0 auto;
 
-    gap: 5px;
-}
-
-.letter-tab {
-    min-height: 36px;
-
-    border: 1px solid #8f6b42;
-    border-radius: 7px 7px 4px 4px;
-
-    font-family:
-        Georgia,
-        "Times New Roman",
-        serif;
-
-    font-size: 0.86rem;
-    font-weight: 700;
-
-    color: #49311f;
-
-    background:
-        linear-gradient(
-            #f3dfad,
-            #d5b474
-        );
-
-    box-shadow:
-        0 3px 7px rgba(0, 0, 0, 0.2);
-
-    cursor: pointer;
-}
-
-.letter-tab.active {
-    color: #fff7e6;
-
-    background:
-        linear-gradient(
-            #8a5836,
-            #5a3421
-        );
-
-    border-color: #3b2115;
-
-    transform: translateY(2px);
+    /*
+    Space on the right allows the tabs to extend
+    beyond the paper.
+    */
+    padding-right: 42px;
 }
 
 /* =====================================================
@@ -803,14 +275,13 @@ header h2 {
 main {
     position: relative;
 
-    max-width: 760px;
-    min-height: 72vh;
+    width: 100%;
+    min-height: 720px;
 
-    margin: 0 auto;
     padding: 24px 18px 48px 56px;
 
     border: 1px solid #d7c7a6;
-    border-radius: 8px 16px 16px 8px;
+    border-radius: 8px 14px 14px 8px;
 
     background:
         linear-gradient(
@@ -841,8 +312,7 @@ main {
 
     box-shadow:
         0 16px 36px rgba(0, 0, 0, 0.28),
-        inset 7px 0 12px
-        rgba(84, 53, 31, 0.08);
+        inset 7px 0 12px rgba(84, 53, 31, 0.08);
 }
 
 /* Binder holes */
@@ -867,7 +337,7 @@ main::before {
         center top / 12px 32px repeat-y;
 }
 
-/* Large letter */
+/* Large current letter */
 
 #current-letter {
     height: 56px;
@@ -888,11 +358,94 @@ main::before {
 }
 
 /* =====================================================
+   RIGHT-SIDE ALPHABET TABS
+   ===================================================== */
+
+#letter-tabs {
+    position: absolute;
+
+    top: 18px;
+    right: 0;
+    bottom: 18px;
+
+    width: 45px;
+
+    display: grid;
+    grid-template-rows:
+        repeat(26, minmax(20px, 1fr));
+
+    gap: 1px;
+
+    z-index: 5;
+}
+
+.letter-tab {
+    position: relative;
+
+    width: 45px;
+    min-height: 20px;
+
+    border:
+        1px solid
+        #8f6b42;
+
+    border-left: none;
+
+    border-radius:
+        0 7px 7px 0;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+
+    color: #49311f;
+
+    background:
+        linear-gradient(
+            to right,
+            #d4b16e,
+            #f1dda8
+        );
+
+    box-shadow:
+        3px 2px 5px rgba(0, 0, 0, 0.2);
+
+    cursor: pointer;
+}
+
+.letter-tab:hover {
+    padding-left: 5px;
+}
+
+.letter-tab.active {
+    width: 51px;
+
+    color: #fff7e6;
+
+    background:
+        linear-gradient(
+            to right,
+            #5a3421,
+            #8a5836
+        );
+
+    border-color: #3b2115;
+
+    box-shadow:
+        4px 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+/* =====================================================
    WRITING AREA
    ===================================================== */
 
 #editor {
-    min-height: 62vh;
+    min-height: 620px;
     padding: 0 6px 64px 0;
 
     outline: none;
@@ -928,32 +481,52 @@ main::before {
 @media (max-width: 560px) {
     #cover-screen {
         padding: 18px;
-        perspective: 1250px;
     }
 
-    .cover-stage {
+    .cover {
         min-height: 500px;
     }
 
-    #letter-tabs {
-        grid-template-columns:
-            repeat(7, minmax(0, 1fr));
+    #book-screen {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    header {
+        margin-left: 6px;
+        margin-right: 6px;
+    }
+
+    .book-layout {
+        width: 100%;
+        padding-right: 34px;
     }
 
     main {
-        padding-left: 50px;
+        min-height: 700px;
+        padding-left: 48px;
+        padding-right: 12px;
+    }
+
+    main::before {
+        left: 15px;
+    }
+
+    #letter-tabs {
+        width: 37px;
+    }
+
+    .letter-tab {
+        width: 37px;
+        font-size: 0.68rem;
+    }
+
+    .letter-tab.active {
+        width: 42px;
     }
 
     #editor {
+        min-height: 600px;
         font-size: 1rem;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    body.book-opening .cover-stage,
-    body.book-opening .cover,
-    body.book-opening .cover::after,
-    body.book-opening .cover-curl span {
-        animation-duration: 400ms;
     }
 }

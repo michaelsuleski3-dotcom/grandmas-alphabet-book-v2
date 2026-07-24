@@ -11,79 +11,67 @@
     <title>Grandma's Alphabet Book</title>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=216">
+    <link rel="stylesheet" href="style.css?v=220">
 
     <meta name="theme-color" content="#6B4423">
 </head>
 
 <body>
 
-    <!-- Opening Cover -->
+    <!-- Simple Opening Cover -->
 
     <div id="cover-screen">
 
-        <div class="cover-stage">
+        <div class="cover">
 
-            <div class="cover">
+            <h1>Grandma's Alphabet Book</h1>
 
-                <div class="book-icon">📕</div>
+            <p class="subtitle">
+                Everything in its place.
+            </p>
 
-                <h1>Grandma's Alphabet Book</h1>
-
-                <p class="subtitle">
-                    Everything in its place.
-                </p>
-
-                <button id="open-book" type="button">
-                    Open Book
-                </button>
-
-            </div>
-
-            <!-- Flexible leather sections -->
-
-            <div class="cover-curl" aria-hidden="true">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+            <button id="open-book" type="button">
+                Open Book
+            </button>
 
         </div>
 
     </div>
 
-    <!-- Main Notebook -->
+    <!-- Main Alphabet Book -->
 
-    <div id="book-screen">
+    <div id="book-screen" class="hidden">
 
         <header>
             <h2>Grandma's Alphabet Book</h2>
         </header>
 
-        <nav id="letter-tabs">
-            <!-- A–Z buttons go here -->
-        </nav>
+        <div class="book-layout">
 
-        <main>
+            <main>
 
-            <h3 id="current-letter">A</h3>
+                <h3 id="current-letter">A</h3>
 
-            <div
-                id="editor"
-                contenteditable="true"
-                spellcheck="true"
-            ></div>
+                <div
+                    id="editor"
+                    contenteditable="true"
+                    spellcheck="true"
+                ></div>
 
-        </main>
+            </main>
+
+            <nav
+                id="letter-tabs"
+                aria-label="Alphabet pages"
+            >
+                <!-- A–Z tabs are created by app.js -->
+            </nav>
+
+        </div>
 
     </div>
 
-    <script src="app.js?v=216"></script>
+    <script src="app.js?v=220"></script>
 
 </body>
 </html>

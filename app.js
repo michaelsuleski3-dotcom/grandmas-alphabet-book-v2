@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.1.6
+   Version 2.2.0
    ===================================================== */
 
 "use strict";
@@ -10,6 +10,9 @@ const alphabet =
 
 const coverScreen =
     document.getElementById("cover-screen");
+
+const bookScreen =
+    document.getElementById("book-screen");
 
 const openBookButton =
     document.getElementById("open-book");
@@ -25,7 +28,6 @@ const editor =
 
 let currentLetter = "A";
 let saveTimer = null;
-let openingFinished = false;
 
 /* =====================================================
    STORAGE
@@ -75,7 +77,7 @@ function scheduleSave() {
 }
 
 /* =====================================================
-   LETTER TABS
+   ALPHABET TABS
    ===================================================== */
 
 function createLetterTabs() {
@@ -122,10 +124,16 @@ function updateActiveTab() {
             isActive
         );
 
-        tab.setAttribute(
-            "aria-current",
-            isActive ? "page" : "false"
-        );
+        if (isActive) {
+            tab.setAttribute(
+                "aria-current",
+                "page"
+            );
+        } else {
+            tab.removeAttribute(
+                "aria-current"
+            );
+        }
     });
 }
 
@@ -151,67 +159,22 @@ function openLetter(letter) {
    OPEN THE BOOK
    ===================================================== */
 
-function finishOpeningBook() {
-    if (openingFinished) {
-        return;
-    }
-
-    openingFinished = true;
-
-    document.body.classList.remove(
-        "book-opening"
-    );
-
-    document.body.classList.add(
-        "book-open"
-    );
-
-    openLetter(currentLetter);
-    editor.focus();
-
-    openBookButton.disabled = false;
-}
-
 function openBook() {
-    if (
-        document.body.classList.contains(
-            "book-opening"
-        )
-    ) {
-        return;
-    }
-
-    openingFinished = false;
-    openBookButton.disabled = true;
-
     /*
-    Both the page and the animation appear during
-    the same browser frame. This avoids the old pause.
+    Always begin on page A.
     */
 
-    document.body.classList.add(
-        "book-opening"
-    );
+    currentLetter = "A";
 
-    const coverStage =
-        document.querySelector(
-            ".cover-stage"
-        );
+    coverScreen.classList.add("hidden");
+    bookScreen.classList.remove("hidden");
 
-    coverStage.addEventListener(
-        "animationend",
-        finishOpeningBook,
-        { once: true }
-    );
+    openLetter("A");
 
     /*
-    Backup for browsers that fail to report
-    animationend.
+    Do not automatically open the keyboard on phones.
+    The user can tap the writing area when ready.
     */
-
-    window.setTimeout(() => {
-        finishOpeningBook();
-    }, 1350);
 }
 
 /* =====================================================
@@ -247,4 +210,4 @@ document.addEventListener(
    ===================================================== */
 
 createLetterTabs();
-openLetter(currentLetter);
+openLetter("A");
