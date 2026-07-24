@@ -197,6 +197,10 @@ function openBook() {
 
     openLetter("A");
 }
+openBookButton.addEventListener(
+    "click",
+    openBook
+);
 
 /* =====================================================
    SELECTION HELPERS
