@@ -787,4 +787,8 @@ if ("serviceWorker" in navigator) {
    ===================================================== */
 
 createLetterTabs();
-openLetter("A");
+
+currentLetter = "A";
+currentLetterHeading.textContent = "A";
+editor.innerHTML = loadLetter("A");
+updateActiveTab();
