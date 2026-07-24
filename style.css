@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.3.0 — Stacked Vintage Pages
+   Version 2.4.0 — Vintage Rich Text
    ===================================================== */
 
 * {
@@ -339,12 +339,6 @@ main {
     border: 1px solid #d7c7a6;
     border-radius: 8px 14px 14px 8px;
 
-    /*
-    Layer 1: red vertical margin line
-    Layer 2: blank cream heading area
-    Layer 3: repeating horizontal writing lines
-    */
-
     background:
         linear-gradient(
             to right,
@@ -602,12 +596,255 @@ main::after {
 }
 
 #editor:empty::before {
-    content: "Tap here to begin writing...";
+    content: attr(data-placeholder);
 
     color:
         rgba(47, 37, 29, 0.42);
 
     pointer-events: none;
+}
+
+/* Preserve comfortable spacing in formatted writing */
+
+#editor div,
+#editor p {
+    min-height: 32px;
+}
+
+#editor font {
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+}
+
+/* =====================================================
+   FLOATING VINTAGE FORMATTING TOOLBAR
+   ===================================================== */
+
+.format-toolbar {
+    position: fixed;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    padding: 5px;
+
+    border: 1px solid #3d2114;
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #8a5836,
+            #60361f
+        );
+
+    box-shadow:
+        0 7px 18px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+    transform: translate(-50%, -100%);
+}
+
+.format-button {
+    position: relative;
+
+    width: 34px;
+    height: 32px;
+
+    padding: 0;
+
+    border: 1px solid #3e2316;
+    border-radius: 6px;
+
+    color: #f2dba8;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #7b4b2d,
+            #56301d
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 1.05rem;
+
+    cursor: pointer;
+}
+
+.format-button:hover {
+    background:
+        linear-gradient(
+            to bottom,
+            #8a5836,
+            #623821
+        );
+}
+
+.format-button:active,
+.format-button.active {
+    color: #432718;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #e0c281,
+            #ba914f
+        );
+
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.22);
+}
+
+.italic-button {
+    font-style: italic;
+}
+
+.size-button {
+    font-size: 1.22rem;
+}
+
+.color-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-letter {
+    position: relative;
+    top: -2px;
+}
+
+.current-color-line {
+    position: absolute;
+
+    left: 7px;
+    right: 7px;
+    bottom: 4px;
+
+    height: 3px;
+
+    border-radius: 4px;
+
+    background: #2f251d;
+}
+
+/* =====================================================
+   FORMATTING MENUS
+   ===================================================== */
+
+.format-menu {
+    position: absolute;
+
+    top: calc(100% + 7px);
+    left: 0;
+
+    padding: 6px;
+
+    border: 1px solid #442719;
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #7a492c,
+            #5a321e
+        );
+
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.34);
+}
+
+.size-menu {
+    display: flex;
+    gap: 4px;
+}
+
+.size-menu button {
+    padding: 7px 9px;
+
+    border: 1px solid #402417;
+    border-radius: 5px;
+
+    color: #f4dfad;
+
+    background: #5b341f;
+
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.size-menu button:hover,
+.size-menu button:active {
+    color: #3f2819;
+
+    background:
+        linear-gradient(
+            #e1c484,
+            #bd9454
+        );
+}
+
+.color-menu {
+    left: auto;
+    right: 0;
+
+    display: grid;
+    grid-template-columns:
+        repeat(3, 28px);
+
+    gap: 7px;
+}
+
+.color-choice {
+    width: 28px;
+    height: 28px;
+
+    border: 2px solid #ead8ae;
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.34);
+
+    cursor: pointer;
+}
+
+.color-choice:hover {
+    transform: scale(1.08);
+}
+
+.color-choice.black {
+    background: #2f251d;
+}
+
+.color-choice.dark-orange {
+    background: #b65a1b;
+}
+
+.color-choice.dark-blue {
+    background: #234c7a;
+}
+
+.color-choice.forest-green {
+    background: #2e5d3b;
+}
+
+.color-choice.burgundy {
+    background: #7a2f3b;
+}
+
+.color-choice.plum {
+    background: #5b4678;
 }
 
 /* =====================================================
@@ -693,5 +930,23 @@ main::after {
     #editor {
         min-height: 600px;
         font-size: 1rem;
+    }
+
+    .format-toolbar {
+        max-width: calc(100vw - 16px);
+    }
+
+    .format-button {
+        width: 36px;
+        height: 34px;
+    }
+
+    .size-menu {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .color-menu {
+        right: 0;
     }
 }
