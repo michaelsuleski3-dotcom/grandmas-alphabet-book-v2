@@ -5,15 +5,30 @@
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
 
     <title>Grandma's Alphabet Book</title>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=230">
+    <link rel="stylesheet" href="style.css?v=240">
 
     <meta name="theme-color" content="#6B4423">
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+    >
+
+    <meta
+        name="apple-mobile-web-app-title"
+        content="Grandma's Book"
+    >
 </head>
 
 <body>
@@ -56,6 +71,10 @@
                     id="editor"
                     contenteditable="true"
                     spellcheck="true"
+                    role="textbox"
+                    aria-multiline="true"
+                    aria-label="Writing page"
+                    data-placeholder="Write something to remember..."
                 ></div>
 
             </main>
@@ -71,7 +90,153 @@
 
     </div>
 
-    <script src="app.js?v=220"></script>
+    <!-- Floating Rich-Text Toolbar -->
+
+    <div
+        id="format-toolbar"
+        class="format-toolbar hidden"
+        role="toolbar"
+        aria-label="Text formatting"
+    >
+
+        <button
+            id="bold-button"
+            class="format-button"
+            type="button"
+            data-command="bold"
+            aria-label="Bold"
+            title="Bold"
+        >
+            <strong>B</strong>
+        </button>
+
+        <button
+            id="italic-button"
+            class="format-button italic-button"
+            type="button"
+            data-command="italic"
+            aria-label="Italic"
+            title="Italic"
+        >
+            I
+        </button>
+
+        <button
+            id="size-button"
+            class="format-button size-button"
+            type="button"
+            aria-label="Text size"
+            aria-expanded="false"
+            title="Text Size"
+        >
+            A
+        </button>
+
+        <button
+            id="color-button"
+            class="format-button color-button"
+            type="button"
+            aria-label="Text color"
+            aria-expanded="false"
+            title="Text Color"
+        >
+            <span class="color-letter">A</span>
+            <span
+                id="current-color-line"
+                class="current-color-line"
+            ></span>
+        </button>
+
+        <!-- Text Size Choices -->
+
+        <div
+            id="size-menu"
+            class="format-menu size-menu hidden"
+        >
+
+            <button
+                type="button"
+                data-size="2"
+            >
+                Small
+            </button>
+
+            <button
+                type="button"
+                data-size="3"
+            >
+                Normal
+            </button>
+
+            <button
+                type="button"
+                data-size="5"
+            >
+                Large
+            </button>
+
+        </div>
+
+        <!-- Text Color Choices -->
+
+        <div
+            id="color-menu"
+            class="format-menu color-menu hidden"
+        >
+
+            <button
+                type="button"
+                class="color-choice black"
+                data-color="#2F251D"
+                aria-label="Black"
+                title="Black"
+            ></button>
+
+            <button
+                type="button"
+                class="color-choice dark-orange"
+                data-color="#B65A1B"
+                aria-label="Dark Orange"
+                title="Dark Orange"
+            ></button>
+
+            <button
+                type="button"
+                class="color-choice dark-blue"
+                data-color="#234C7A"
+                aria-label="Dark Blue"
+                title="Dark Blue"
+            ></button>
+
+            <button
+                type="button"
+                class="color-choice forest-green"
+                data-color="#2E5D3B"
+                aria-label="Forest Green"
+                title="Forest Green"
+            ></button>
+
+            <button
+                type="button"
+                class="color-choice burgundy"
+                data-color="#7A2F3B"
+                aria-label="Burgundy"
+                title="Burgundy"
+            ></button>
+
+            <button
+                type="button"
+                class="color-choice plum"
+                data-color="#5B4678"
+                aria-label="Plum"
+                title="Plum"
+            ></button>
+
+        </div>
+
+    </div>
+
+    <script src="app.js?v=240"></script>
 
 </body>
 </html>
