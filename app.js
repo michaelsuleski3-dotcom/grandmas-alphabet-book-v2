@@ -1,22 +1,31 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.1.5
+   Version 2.1.6
    ===================================================== */
 
 "use strict";
 
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-const coverScreen = document.getElementById("cover-screen");
-const bookScreen = document.getElementById("book-screen");
-const openBookButton = document.getElementById("open-book");
-const letterTabs = document.getElementById("letter-tabs");
+const coverScreen =
+    document.getElementById("cover-screen");
+
+const openBookButton =
+    document.getElementById("open-book");
+
+const letterTabs =
+    document.getElementById("letter-tabs");
+
 const currentLetterHeading =
     document.getElementById("current-letter");
-const editor = document.getElementById("editor");
+
+const editor =
+    document.getElementById("editor");
 
 let currentLetter = "A";
 let saveTimer = null;
+let openingFinished = false;
 
 /* =====================================================
    STORAGE
@@ -28,9 +37,11 @@ function getStorageKey(letter) {
 
 function loadLetter(letter) {
     try {
-        return localStorage.getItem(
-            getStorageKey(letter)
-        ) || "";
+        return (
+            localStorage.getItem(
+                getStorageKey(letter)
+            ) || ""
+        );
     } catch (error) {
         console.error(
             "Unable to load saved information:",
@@ -71,7 +82,8 @@ function createLetterTabs() {
     letterTabs.innerHTML = "";
 
     alphabet.forEach((letter) => {
-        const button = document.createElement("button");
+        const button =
+            document.createElement("button");
 
         button.type = "button";
         button.className = "letter-tab";
@@ -83,9 +95,12 @@ function createLetterTabs() {
             `Open letter ${letter}`
         );
 
-        button.addEventListener("click", () => {
-            openLetter(letter);
-        });
+        button.addEventListener(
+            "click",
+            () => {
+                openLetter(letter);
+            }
+        );
 
         letterTabs.appendChild(button);
     });
@@ -93,11 +108,14 @@ function createLetterTabs() {
 
 function updateActiveTab() {
     const tabs =
-        document.querySelectorAll(".letter-tab");
+        document.querySelectorAll(
+            ".letter-tab"
+        );
 
     tabs.forEach((tab) => {
         const isActive =
-            tab.dataset.letter === currentLetter;
+            tab.dataset.letter ===
+            currentLetter;
 
         tab.classList.toggle(
             "active",
@@ -119,8 +137,12 @@ function openLetter(letter) {
     saveCurrentLetter();
 
     currentLetter = letter;
-    currentLetterHeading.textContent = letter;
-    editor.innerHTML = loadLetter(letter);
+
+    currentLetterHeading.textContent =
+        letter;
+
+    editor.innerHTML =
+        loadLetter(letter);
 
     updateActiveTab();
 }
@@ -130,8 +152,19 @@ function openLetter(letter) {
    ===================================================== */
 
 function finishOpeningBook() {
-    coverScreen.classList.add("hidden");
-    coverScreen.classList.remove("opening");
+    if (openingFinished) {
+        return;
+    }
+
+    openingFinished = true;
+
+    document.body.classList.remove(
+        "book-opening"
+    );
+
+    document.body.classList.add(
+        "book-open"
+    );
 
     openLetter(currentLetter);
     editor.focus();
@@ -140,44 +173,45 @@ function finishOpeningBook() {
 }
 
 function openBook() {
+    if (
+        document.body.classList.contains(
+            "book-opening"
+        )
+    ) {
+        return;
+    }
+
+    openingFinished = false;
     openBookButton.disabled = true;
 
     /*
-    Display the cream page underneath the cover.
+    Both the page and the animation appear during
+    the same browser frame. This avoids the old pause.
     */
-    bookScreen.classList.remove("hidden");
 
-    /*
-    Force the browser to lay out the revealed page immediately.
-    This removes the hesitation caused by two animation frames.
-    */
-    void bookScreen.offsetWidth;
+    document.body.classList.add(
+        "book-opening"
+    );
 
-    /*
-    Start the hinged cover animation immediately.
-    */
-    coverScreen.classList.add("opening");
+    const coverStage =
+        document.querySelector(
+            ".cover-stage"
+        );
 
-    /*
-    Use the real animation ending rather than relying only
-    on a timer. This makes the transition feel smoother.
-    */
-    const cover = coverScreen.querySelector(".cover");
-
-    cover.addEventListener(
+    coverStage.addEventListener(
         "animationend",
         finishOpeningBook,
         { once: true }
     );
 
     /*
-    Backup in case a browser does not report animationend.
+    Backup for browsers that fail to report
+    animationend.
     */
+
     window.setTimeout(() => {
-        if (!coverScreen.classList.contains("hidden")) {
-            finishOpeningBook();
-        }
-    }, 1200);
+        finishOpeningBook();
+    }, 1350);
 }
 
 /* =====================================================

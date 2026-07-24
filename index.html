@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Grandma's Alphabet Book</title>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=216">
 
     <meta name="theme-color" content="#6B4423">
 </head>
@@ -17,19 +22,36 @@
 
     <div id="cover-screen">
 
-        <div class="cover">
+        <div class="cover-stage">
 
-            <div class="book-icon">📕</div>
+            <div class="cover">
 
-            <h1>Grandma's Alphabet Book</h1>
+                <div class="book-icon">📕</div>
 
-            <p class="subtitle">
-                Everything in its place.
-            </p>
+                <h1>Grandma's Alphabet Book</h1>
 
-            <button id="open-book">
-                Open Book
-            </button>
+                <p class="subtitle">
+                    Everything in its place.
+                </p>
+
+                <button id="open-book" type="button">
+                    Open Book
+                </button>
+
+            </div>
+
+            <!-- Flexible leather sections -->
+
+            <div class="cover-curl" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
 
         </div>
 
@@ -37,12 +59,10 @@
 
     <!-- Main Notebook -->
 
-    <div id="book-screen" class="hidden">
+    <div id="book-screen">
 
         <header>
-
             <h2>Grandma's Alphabet Book</h2>
-
         </header>
 
         <nav id="letter-tabs">
@@ -53,16 +73,17 @@
 
             <h3 id="current-letter">A</h3>
 
-            <div id="editor"
-                 contenteditable="true"
-                 spellcheck="true">
-            </div>
+            <div
+                id="editor"
+                contenteditable="true"
+                spellcheck="true"
+            ></div>
 
         </main>
 
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=216"></script>
 
 </body>
 </html>

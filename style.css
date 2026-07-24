@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.1.5 — Flexible Hinged Cover
+   Version 2.1.6 — Segmented Flexible Cover
    ===================================================== */
 
 * {
@@ -25,13 +25,20 @@ body {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color: var(--ink);
-    background: linear-gradient(135deg, #4c2b1a, #2f1b11);
-}
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 
-.hidden {
-    display: none !important;
+    color: var(--ink);
+
+    background:
+        linear-gradient(
+            135deg,
+            #4c2b1a,
+            #2f1b11
+        );
 }
 
 /* =====================================================
@@ -50,21 +57,42 @@ body {
     padding: 24px;
     overflow: hidden;
 
-    background: linear-gradient(135deg, #4c2b1a, #2f1b11);
+    background:
+        linear-gradient(
+            135deg,
+            #4c2b1a,
+            #2f1b11
+        );
 
-    perspective: 1500px;
+    perspective: 1700px;
     perspective-origin: 42% center;
 }
 
-/* =====================================================
-   LEATHER COVER
-   ===================================================== */
+/*
+The entire cover and its flexible sections live inside
+this stage. The stage rotates around the left edge.
+*/
 
-.cover {
+.cover-stage {
     position: relative;
 
     width: min(360px, 94vw);
     min-height: 520px;
+
+    transform-origin: left center;
+    transform-style: preserve-3d;
+
+    will-change: transform, opacity;
+}
+
+/* =====================================================
+   MAIN LEATHER COVER
+   ===================================================== */
+
+.cover {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
 
     padding: 64px 34px 42px;
 
@@ -74,21 +102,7 @@ body {
     border: 3px solid #2f1a10;
     border-radius: 22px 14px 14px 22px;
 
-    transform-origin: left center;
-    transform:
-        rotateY(0deg)
-        rotateZ(0deg)
-        skewY(0deg)
-        scaleX(1);
-
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-
-    will-change:
-        transform,
-        opacity,
-        border-radius,
-        box-shadow;
+    overflow: hidden;
 
     background:
         radial-gradient(
@@ -121,44 +135,43 @@ body {
 
     position: absolute;
     inset: 12px;
-    z-index: 2;
+    z-index: 1;
 
-    border: 1px dashed rgba(232, 194, 122, 0.58);
+    border:
+        1px dashed
+        rgba(232, 194, 122, 0.58);
+
     border-radius: 15px 9px 9px 15px;
 
     pointer-events: none;
 }
 
 /*
-This moving highlight helps create the appearance
-that the leather cover is bending.
+A soft highlight travels across the cover while it opens.
 */
 
 .cover::after {
     content: "";
 
     position: absolute;
-    top: 3px;
-    right: 0;
-    bottom: 3px;
+    top: 0;
+    right: -35%;
+    bottom: 0;
 
-    width: 32%;
+    width: 48%;
     z-index: 1;
-
-    border-radius: 0 12px 12px 0;
 
     background:
         linear-gradient(
             to left,
-            rgba(255, 231, 190, 0.2),
-            rgba(255, 255, 255, 0.03) 40%,
-            rgba(0, 0, 0, 0.13) 75%,
+            transparent,
+            rgba(255, 227, 181, 0.18),
+            rgba(255, 255, 255, 0.04),
             transparent
         );
 
     opacity: 0;
-    transform: scaleX(0.45);
-    transform-origin: right center;
+    transform: skewX(-10deg);
 
     pointer-events: none;
 }
@@ -173,12 +186,18 @@ that the leather cover is bending.
 
     margin-top: 54px;
 
-    font-family: Georgia, "Times New Roman", serif;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
     font-size: clamp(2rem, 8vw, 2.65rem);
     line-height: 1.08;
 
     color: var(--gold);
-    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+
+    text-shadow:
+        0 2px 3px rgba(0, 0, 0, 0.35);
 }
 
 .subtitle {
@@ -187,7 +206,11 @@ that the leather cover is bending.
 
     margin: 22px 0 54px;
 
-    font-family: Georgia, "Times New Roman", serif;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
     font-size: 1.06rem;
     font-style: italic;
 
@@ -196,7 +219,7 @@ that the leather cover is bending.
 
 #open-book {
     position: relative;
-    z-index: 3;
+    z-index: 4;
 
     min-width: 150px;
     padding: 14px 25px;
@@ -208,7 +231,12 @@ that the leather cover is bending.
     font-weight: 700;
 
     color: #3c2818;
-    background: linear-gradient(#efd59a, #d7ad5d);
+
+    background:
+        linear-gradient(
+            #efd59a,
+            #d7ad5d
+        );
 
     box-shadow:
         0 6px 14px rgba(0, 0, 0, 0.28),
@@ -226,142 +254,417 @@ that the leather cover is bending.
 }
 
 /* =====================================================
-   FLEXIBLE COVER OPENING
+   FLEXIBLE COVER SECTIONS
    ===================================================== */
 
-#cover-screen.opening {
+/*
+These narrow sections sit over the right portion of the
+cover. They rotate by different amounts during opening,
+which produces a visible curl.
+*/
+
+.cover-curl {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+
+    overflow: hidden;
+
+    border-radius: 22px 14px 14px 22px;
+
+    pointer-events: none;
+
+    transform-style: preserve-3d;
+}
+
+.cover-curl span {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+
+    width: 12.5%;
+
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+
+    opacity: 0;
+
+    background:
+        repeating-linear-gradient(
+            115deg,
+            rgba(255, 255, 255, 0.025) 0,
+            rgba(255, 255, 255, 0.025) 2px,
+            rgba(0, 0, 0, 0.035) 3px,
+            rgba(0, 0, 0, 0.035) 5px
+        ),
+        linear-gradient(
+            145deg,
+            #8a5836,
+            #3f2417
+        );
+
+    border-right:
+        1px solid
+        rgba(34, 18, 10, 0.13);
+
+    box-shadow:
+        inset -8px 0 12px
+        rgba(0, 0, 0, 0.08);
+
+    will-change: transform, opacity;
+}
+
+.cover-curl span:nth-child(1) {
+    left: 0%;
+}
+
+.cover-curl span:nth-child(2) {
+    left: 12.5%;
+}
+
+.cover-curl span:nth-child(3) {
+    left: 25%;
+}
+
+.cover-curl span:nth-child(4) {
+    left: 37.5%;
+}
+
+.cover-curl span:nth-child(5) {
+    left: 50%;
+}
+
+.cover-curl span:nth-child(6) {
+    left: 62.5%;
+}
+
+.cover-curl span:nth-child(7) {
+    left: 75%;
+}
+
+.cover-curl span:nth-child(8) {
+    left: 87.5%;
+}
+
+/* =====================================================
+   REALISTIC OPENING ANIMATION
+   ===================================================== */
+
+body.book-opening #cover-screen {
     background: transparent;
     pointer-events: none;
 }
 
-#cover-screen.opening .cover {
+/*
+The whole cover swings around its left hinge.
+*/
+
+body.book-opening .cover-stage {
     animation:
-        bendAndOpenCover 1050ms
-        cubic-bezier(0.3, 0.02, 0.18, 1)
+        swingCoverOpen 1150ms
+        cubic-bezier(0.26, 0.03, 0.15, 1)
         forwards;
 }
 
-#cover-screen.opening .cover::after {
+/*
+The flat base cover changes shape slightly.
+*/
+
+body.book-opening .cover {
     animation:
-        coverBendHighlight 1050ms
+        softenMainCover 1150ms
         ease-in-out
         forwards;
 }
 
-@keyframes bendAndOpenCover {
+/*
+The highlight crosses the leather during the bend.
+*/
+
+body.book-opening .cover::after {
+    animation:
+        movingLeatherHighlight 800ms
+        ease-out
+        forwards;
+}
+
+/*
+Each narrow section curls by a different amount.
+The rightmost section bends the most.
+*/
+
+body.book-opening .cover-curl span {
+    opacity: 1;
+
+    animation-duration: 720ms;
+    animation-timing-function:
+        cubic-bezier(0.32, 0, 0.18, 1);
+    animation-fill-mode: forwards;
+}
+
+body.book-opening .cover-curl span:nth-child(1) {
+    animation-name: curlSection1;
+}
+
+body.book-opening .cover-curl span:nth-child(2) {
+    animation-name: curlSection2;
+}
+
+body.book-opening .cover-curl span:nth-child(3) {
+    animation-name: curlSection3;
+}
+
+body.book-opening .cover-curl span:nth-child(4) {
+    animation-name: curlSection4;
+}
+
+body.book-opening .cover-curl span:nth-child(5) {
+    animation-name: curlSection5;
+}
+
+body.book-opening .cover-curl span:nth-child(6) {
+    animation-name: curlSection6;
+}
+
+body.book-opening .cover-curl span:nth-child(7) {
+    animation-name: curlSection7;
+}
+
+body.book-opening .cover-curl span:nth-child(8) {
+    animation-name: curlSection8;
+}
+
+/* Whole cover movement */
+
+@keyframes swingCoverOpen {
     0% {
         transform:
             rotateY(0deg)
-            rotateZ(0deg)
-            skewY(0deg)
-            scaleX(1);
-
-        border-radius: 22px 14px 14px 22px;
-
-        box-shadow:
-            0 24px 55px rgba(0, 0, 0, 0.42),
-            inset 0 0 0 2px rgba(216, 179, 106, 0.22);
+            translateZ(0);
 
         opacity: 1;
     }
 
-    18% {
-        /*
-        The right edge lifts slightly before the cover swings.
-        */
+    15% {
         transform:
-            rotateY(-18deg)
-            rotateZ(-0.3deg)
-            skewY(-0.8deg)
-            scaleX(0.99);
+            rotateY(-9deg)
+            translateZ(8px);
 
-        border-radius: 22px 24px 24px 22px;
-
-        box-shadow:
-            13px 24px 46px rgba(0, 0, 0, 0.4),
-            inset -16px 0 20px rgba(255, 224, 174, 0.06);
+        opacity: 1;
     }
 
     42% {
-        /*
-        The strongest bend occurs in the middle.
-        */
         transform:
-            rotateY(-68deg)
-            rotateZ(-0.7deg)
-            skewY(-2deg)
-            scaleX(0.95);
-
-        border-radius: 22px 40px 40px 22px;
-
-        box-shadow:
-            30px 22px 42px rgba(0, 0, 0, 0.34),
-            inset -30px 0 30px rgba(255, 224, 174, 0.09);
+            rotateY(-58deg)
+            translateZ(15px);
 
         opacity: 1;
     }
 
-    70% {
+    72% {
         transform:
-            rotateY(-126deg)
-            rotateZ(-0.4deg)
-            skewY(-1deg)
-            scaleX(0.97);
-
-        border-radius: 22px 30px 30px 22px;
-
-        box-shadow:
-            18px 18px 30px rgba(0, 0, 0, 0.26);
+            rotateY(-128deg)
+            translateZ(8px);
 
         opacity: 1;
     }
 
     100% {
         transform:
-            rotateY(-176deg)
-            rotateZ(0deg)
-            skewY(0deg)
-            scaleX(1);
-
-        border-radius: 22px 14px 14px 22px;
-
-        box-shadow:
-            4px 8px 14px rgba(0, 0, 0, 0.12);
+            rotateY(-178deg)
+            translateZ(0);
 
         opacity: 0;
     }
 }
 
-@keyframes coverBendHighlight {
+/* Main cover softness */
+
+@keyframes softenMainCover {
     0% {
-        width: 18%;
-        opacity: 0;
-        transform: scaleX(0.35);
+        border-radius:
+            22px 14px 14px 22px;
+
+        box-shadow:
+            0 24px 55px rgba(0, 0, 0, 0.42),
+            inset 0 0 0 2px
+            rgba(216, 179, 106, 0.22);
     }
 
-    22% {
-        width: 28%;
-        opacity: 0.5;
-        transform: scaleX(0.75);
+    35% {
+        border-radius:
+            22px 32px 32px 22px;
+
+        box-shadow:
+            24px 24px 46px rgba(0, 0, 0, 0.34),
+            inset -20px 0 26px
+            rgba(255, 224, 174, 0.07);
     }
 
-    48% {
-        width: 42%;
-        opacity: 0.9;
-        transform: scaleX(1);
-    }
+    65% {
+        border-radius:
+            22px 38px 38px 22px;
 
-    72% {
-        width: 24%;
-        opacity: 0.35;
-        transform: scaleX(0.65);
+        box-shadow:
+            18px 18px 34px rgba(0, 0, 0, 0.25),
+            inset -30px 0 30px
+            rgba(255, 224, 174, 0.08);
     }
 
     100% {
-        width: 10%;
-        opacity: 0;
-        transform: scaleX(0.25);
+        border-radius:
+            22px 14px 14px 22px;
+
+        box-shadow:
+            4px 8px 14px rgba(0, 0, 0, 0.1);
     }
+}
+
+/* Moving highlight */
+
+@keyframes movingLeatherHighlight {
+    0% {
+        right: -45%;
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 0.2;
+    }
+
+    60% {
+        right: 45%;
+        opacity: 0.75;
+    }
+
+    100% {
+        right: 105%;
+        opacity: 0;
+    }
+}
+
+/*
+The first sections barely bend.
+The right edge bends strongly.
+*/
+
+@keyframes curlSection1 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-1deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes curlSection2 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-3deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes curlSection3 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-6deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes curlSection4 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-10deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes curlSection5 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-16deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes curlSection6 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-24deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes curlSection7 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-34deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes curlSection8 {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    52% {
+        transform: rotateY(-48deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+/* Hide cover after opening */
+
+body.book-open #cover-screen {
+    display: none;
 }
 
 /* =====================================================
@@ -372,13 +675,30 @@ that the leather cover is bending.
     min-height: 100vh;
     padding: 18px 14px 34px;
 
+    visibility: hidden;
+    opacity: 0;
+
     background:
         radial-gradient(
             circle at top,
             rgba(255, 255, 255, 0.08),
             transparent 30%
         ),
-        linear-gradient(135deg, #4c2b1a, #2f1b11);
+        linear-gradient(
+            135deg,
+            #4c2b1a,
+            #2f1b11
+        );
+}
+
+/*
+The page becomes visible immediately behind the cover.
+*/
+
+body.book-opening #book-screen,
+body.book-open #book-screen {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* ---------- Header ---------- */
@@ -388,19 +708,33 @@ header {
     margin: 0 auto 14px;
     padding: 13px 18px;
 
-    border: 1px solid rgba(216, 179, 106, 0.42);
+    border:
+        1px solid
+        rgba(216, 179, 106, 0.42);
+
     border-radius: 14px;
 
-    background: linear-gradient(145deg, #74472b, #51301e);
+    background:
+        linear-gradient(
+            145deg,
+            #74472b,
+            #51301e
+        );
 
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.28);
 }
 
 header h2 {
     text-align: center;
 
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(1.25rem, 5vw, 1.75rem);
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size:
+        clamp(1.25rem, 5vw, 1.75rem);
 
     color: #efd9af;
 }
@@ -414,7 +748,9 @@ header h2 {
     margin: 0 auto 14px;
 
     display: grid;
-    grid-template-columns: repeat(13, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(13, minmax(0, 1fr));
+
     gap: 5px;
 }
 
@@ -424,21 +760,37 @@ header h2 {
     border: 1px solid #8f6b42;
     border-radius: 7px 7px 4px 4px;
 
-    font-family: Georgia, "Times New Roman", serif;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
     font-size: 0.86rem;
     font-weight: 700;
 
     color: #49311f;
-    background: linear-gradient(#f3dfad, #d5b474);
 
-    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
+    background:
+        linear-gradient(
+            #f3dfad,
+            #d5b474
+        );
+
+    box-shadow:
+        0 3px 7px rgba(0, 0, 0, 0.2);
 
     cursor: pointer;
 }
 
 .letter-tab.active {
     color: #fff7e6;
-    background: linear-gradient(#8a5836, #5a3421);
+
+    background:
+        linear-gradient(
+            #8a5836,
+            #5a3421
+        );
+
     border-color: #3b2115;
 
     transform: translateY(2px);
@@ -489,8 +841,11 @@ main {
 
     box-shadow:
         0 16px 36px rgba(0, 0, 0, 0.28),
-        inset 7px 0 12px rgba(84, 53, 31, 0.08);
+        inset 7px 0 12px
+        rgba(84, 53, 31, 0.08);
 }
+
+/* Binder holes */
 
 main::before {
     content: "";
@@ -512,7 +867,7 @@ main::before {
         center top / 12px 32px repeat-y;
 }
 
-/* ---------- Large Letter Heading ---------- */
+/* Large letter */
 
 #current-letter {
     height: 56px;
@@ -521,7 +876,11 @@ main::before {
     display: flex;
     align-items: center;
 
-    font-family: Georgia, "Times New Roman", serif;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
     font-size: 2.6rem;
     line-height: 1;
 
@@ -538,7 +897,11 @@ main::before {
 
     outline: none;
 
-    font-family: Georgia, "Times New Roman", serif;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
     font-size: 1.08rem;
     line-height: 32px;
 
@@ -552,7 +915,8 @@ main::before {
 #editor:empty::before {
     content: "Tap here to begin writing...";
 
-    color: rgba(47, 37, 29, 0.42);
+    color:
+        rgba(47, 37, 29, 0.42);
 
     pointer-events: none;
 }
@@ -564,15 +928,16 @@ main::before {
 @media (max-width: 560px) {
     #cover-screen {
         padding: 18px;
-        perspective: 1200px;
+        perspective: 1250px;
     }
 
-    .cover {
+    .cover-stage {
         min-height: 500px;
     }
 
     #letter-tabs {
-        grid-template-columns: repeat(7, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(7, minmax(0, 1fr));
     }
 
     main {
@@ -584,14 +949,11 @@ main::before {
     }
 }
 
-/* Reduce animation only when the device requests it */
-
 @media (prefers-reduced-motion: reduce) {
-    #cover-screen.opening .cover {
-        animation-duration: 350ms;
-    }
-
-    #cover-screen.opening .cover::after {
-        animation-duration: 350ms;
+    body.book-opening .cover-stage,
+    body.book-opening .cover,
+    body.book-opening .cover::after,
+    body.book-opening .cover-curl span {
+        animation-duration: 400ms;
     }
 }
