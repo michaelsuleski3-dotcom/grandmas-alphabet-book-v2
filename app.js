@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.1.4
+   Version 2.1.5
    ===================================================== */
 
 "use strict";
@@ -129,36 +129,55 @@ function openLetter(letter) {
    OPEN THE BOOK
    ===================================================== */
 
+function finishOpeningBook() {
+    coverScreen.classList.add("hidden");
+    coverScreen.classList.remove("opening");
+
+    openLetter(currentLetter);
+    editor.focus();
+
+    openBookButton.disabled = false;
+}
+
 function openBook() {
     openBookButton.disabled = true;
 
     /*
-    Reveal the cream page behind the leather cover.
+    Display the cream page underneath the cover.
     */
     bookScreen.classList.remove("hidden");
 
     /*
-    Two animation frames ensure the browser displays
-    the page before rotating the cover.
+    Force the browser to lay out the revealed page immediately.
+    This removes the hesitation caused by two animation frames.
     */
-    window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-            coverScreen.classList.add("opening");
-        });
-    });
+    void bookScreen.offsetWidth;
 
     /*
-    Remove the cover after the hinge animation finishes.
+    Start the hinged cover animation immediately.
+    */
+    coverScreen.classList.add("opening");
+
+    /*
+    Use the real animation ending rather than relying only
+    on a timer. This makes the transition feel smoother.
+    */
+    const cover = coverScreen.querySelector(".cover");
+
+    cover.addEventListener(
+        "animationend",
+        finishOpeningBook,
+        { once: true }
+    );
+
+    /*
+    Backup in case a browser does not report animationend.
     */
     window.setTimeout(() => {
-        coverScreen.classList.add("hidden");
-        coverScreen.classList.remove("opening");
-
-        openLetter(currentLetter);
-        editor.focus();
-
-        openBookButton.disabled = false;
-    }, 950);
+        if (!coverScreen.classList.contains("hidden")) {
+            finishOpeningBook();
+        }
+    }, 1200);
 }
 
 /* =====================================================
