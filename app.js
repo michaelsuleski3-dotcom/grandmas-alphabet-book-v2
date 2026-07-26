@@ -1092,13 +1092,12 @@ function runEditorCommand(
         value
     );
 
-    saveSelection();
-
     scheduleSave();
 
-    updateToolbarState();
+    finishToolbarAction();
 
-    positionFormattingToolbar();
+    editor.focus();
+}
 }
 
 /* =====================================================
@@ -1318,7 +1317,20 @@ function placePlainCursorAfterSelection() {
     savedSelection =
         cursorRange.cloneRange();
 }
+function finishToolbarAction() {
+    savedSelection = null;
 
+    closeAllFormattingMenus();
+
+    hideFormattingToolbar();
+
+    const selection =
+        window.getSelection();
+
+    if (selection) {
+        selection.removeAllRanges();
+    }
+}
 function highlightSelection() {
     restoreSelection();
 
@@ -1335,81 +1347,139 @@ function highlightSelection() {
             "Select the words you want to highlight first."
         );
 
+        finishToolbarAction();
+
         return;
     }
 
-    editor.focus();
+    const range =
+        selection.getRangeAt(0);
 
-    const removeHighlight =
-        selectionHasYellowHighlight();
+    /*
+    Check whether the selected text is already
+    inside a yellow highlight.
+    */
 
-    try {
-        document.execCommand(
-            "styleWithCSS",
-            false,
-            true
+    let selectedElement =
+        range.commonAncestorContainer;
+
+    if (
+        selectedElement.nodeType !==
+        Node.ELEMENT_NODE
+    ) {
+        selectedElement =
+            selectedElement.parentElement;
+    }
+
+    const highlightedParent =
+        selectedElement?.closest(
+            ".yellow-highlight"
         );
 
-        if (removeHighlight) {
-            let successful =
-                document.execCommand(
-                    "hiliteColor",
-                    false,
-                    "transparent"
-                );
+    if (
+        highlightedParent &&
+        editor.contains(
+            highlightedParent
+        )
+    ) {
+        /*
+        Remove an existing highlight.
+        */
 
-            if (!successful) {
-                successful =
-                    document.execCommand(
-                        "backColor",
-                        false,
-                        "transparent"
-                    );
-            }
-        } else {
-            let successful =
-                document.execCommand(
-                    "hiliteColor",
-                    false,
-                    "#ffe04d"
-                );
+        const parent =
+            highlightedParent.parentNode;
 
-            if (!successful) {
-                successful =
-                    document.execCommand(
-                        "backColor",
-                        false,
-                        "#ffe04d"
-                    );
-            }
+        while (
+            highlightedParent.firstChild
+        ) {
+            parent.insertBefore(
+                highlightedParent.firstChild,
+                highlightedParent
+            );
         }
-    } catch (error) {
-        console.error(
-            "Unable to apply highlighter:",
-            error
+
+        highlightedParent.remove();
+
+        parent.normalize();
+    } else {
+        /*
+        Highlight only the selected words.
+        */
+
+        const highlight =
+            document.createElement(
+                "span"
+            );
+
+        highlight.className =
+            "yellow-highlight";
+
+        highlight.style.backgroundColor =
+            "#ffe04d";
+
+        highlight.style.color =
+            "inherit";
+
+        try {
+            range.surroundContents(
+                highlight
+            );
+        } catch (error) {
+            /*
+            This fallback handles selections that
+            cross more than one formatting element.
+            */
+
+            const selectedContents =
+                range.extractContents();
+
+            highlight.appendChild(
+                selectedContents
+            );
+
+            range.insertNode(
+                highlight
+            );
+        }
+
+        /*
+        Place the cursor after the highlighted span,
+        not inside it. New typing will therefore not
+        continue highlighting.
+        */
+
+        const plainTextMarker =
+            document.createTextNode(
+                "\u200B"
+            );
+
+        highlight.after(
+            plainTextMarker
         );
 
-        document.execCommand(
-            "backColor",
-            false,
-            removeHighlight
-                ? "transparent"
-                : "#ffe04d"
+        const cursorRange =
+            document.createRange();
+
+        cursorRange.setStartAfter(
+            plainTextMarker
+        );
+
+        cursorRange.collapse(true);
+
+        selection.removeAllRanges();
+
+        selection.addRange(
+            cursorRange
         );
     }
 
-    /*
-    Place the cursor inside a separate transparent
-    span so new typing will not remain highlighted.
-    */
-
-    placePlainCursorAfterSelection();
-
-    highlightButton.classList.remove(
-        "active"
-    );
+    editor.normalize();
 
     scheduleSave();
+
+    finishToolbarAction();
+
+    editor.focus();
 }
 
 /* =====================================================
@@ -1445,38 +1515,12 @@ function insertChecklist() {
 
     scheduleSave();
 
-    saveSelection();
+    hideFormattingToolbar();
+
+    savedSelection = null;
+
+    editor.focus();
 }
-
-function updateChecklistItem(
-    checkbox
-) {
-    const checklistItem =
-        checkbox.closest(
-            ".checklist-item"
-        );
-
-    if (!checklistItem) {
-        return;
-    }
-
-    checklistItem.classList.toggle(
-        "completed",
-        checkbox.checked
-    );
-
-    if (checkbox.checked) {
-        checkbox.setAttribute(
-            "checked",
-            ""
-        );
-    } else {
-        checkbox.removeAttribute(
-            "checked"
-        );
-    }
-
-    scheduleSave();
 }
 
 /* =====================================================
@@ -2536,11 +2580,6 @@ highlightButton.addEventListener(
     (event) => {
         event.preventDefault();
 
-        /*
-        The selection was saved before the toolbar
-        button took focus.
-        */
-
         highlightSelection();
     }
 );
@@ -2561,6 +2600,8 @@ photoButton.addEventListener(
 
         saveSelection();
 
+        hideFormattingToolbar();
+
         photoInput.click();
     }
 );
@@ -2571,6 +2612,8 @@ attachmentButton.addEventListener(
         event.preventDefault();
 
         saveSelection();
+
+        hideFormattingToolbar();
 
         attachmentInput.click();
     }
