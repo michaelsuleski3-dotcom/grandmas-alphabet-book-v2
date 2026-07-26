@@ -6,7 +6,7 @@
 "use strict";
 
 const CACHE_NAME =
-    "grandmas-alphabet-book-v2-5-0";
+    "grandmas-alphabet-book-v2-5-1";
 
 const APP_FILES = [
     "./",

@@ -1,25 +1,12 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.5.0
-
-   Features:
-   - Automatic saving
-   - Undo and redo
-   - Bold and italic text
-   - Text sizes and colors
-   - Yellow highlighting
-   - Checklists
-   - Photos
-   - Document attachments
-   - Search all pages
-   - Export current page as PDF
-   - Complete backup and restore
+   Version 2.5.1
    ===================================================== */
 
 "use strict";
 
 /* =====================================================
-   BASIC APP SETTINGS
+   APP SETTINGS
    ===================================================== */
 
 const alphabet =
@@ -37,7 +24,7 @@ const ASSET_STORE =
     "assets";
 
 /* =====================================================
-   MAIN PAGE ELEMENTS
+   MAIN ELEMENTS
    ===================================================== */
 
 const coverScreen =
@@ -79,7 +66,7 @@ const backupButton =
     );
 
 /* =====================================================
-   FORMATTING TOOLBAR
+   TOOLBAR ELEMENTS
    ===================================================== */
 
 const formatToolbar =
@@ -133,9 +120,7 @@ const sizeMenu =
     document.getElementById("size-menu");
 
 const colorMenu =
-    document.getElementById(
-        "color-menu"
-    );
+    document.getElementById("color-menu");
 
 /* =====================================================
    FILE INPUTS
@@ -203,7 +188,7 @@ const restoreBackupButton =
     );
 
 /* =====================================================
-   CONFIRMATION WINDOW
+   RESTORE CONFIRMATION WINDOW
    ===================================================== */
 
 const confirmModal =
@@ -299,6 +284,10 @@ function showSaveStatus(
         saveStatusTimer
     );
 
+    if (!saveStatus) {
+        return;
+    }
+
     saveStatus.textContent = message;
 
     saveStatus.className =
@@ -319,14 +308,14 @@ function showSaveStatus(
 }
 
 function closeAllFormattingMenus() {
-    sizeMenu.classList.add("hidden");
-    colorMenu.classList.add("hidden");
+    sizeMenu?.classList.add("hidden");
+    colorMenu?.classList.add("hidden");
 }
 
 function closeAllModals() {
-    searchModal.classList.add("hidden");
-    backupModal.classList.add("hidden");
-    confirmModal.classList.add("hidden");
+    searchModal?.classList.add("hidden");
+    backupModal?.classList.add("hidden");
+    confirmModal?.classList.add("hidden");
 }
 
 /* =====================================================
@@ -381,17 +370,43 @@ function prepareEditorHtmlForStorage() {
         }
     });
 
+    /*
+    Remove invisible cursor markers before saving.
+    */
+
+    copy.querySelectorAll(
+        ".highlight-cursor-marker"
+    ).forEach((marker) => {
+        marker.classList.remove(
+            "highlight-cursor-marker"
+        );
+
+        marker.innerHTML =
+            marker.innerHTML.replace(
+                /\u200B/g,
+                ""
+            );
+
+        if (
+            marker.textContent === "" &&
+            marker.children.length === 0
+        ) {
+            marker.remove();
+        }
+    });
+
     return copy.innerHTML;
 }
 
 function saveCurrentLetter() {
-    try {
-        const savedHtml =
-            prepareEditorHtmlForStorage();
+    if (!editor) {
+        return;
+    }
 
+    try {
         localStorage.setItem(
             getStorageKey(currentLetter),
-            savedHtml
+            prepareEditorHtmlForStorage()
         );
 
         showSaveStatus("Saved");
@@ -788,17 +803,18 @@ function updateActiveTab() {
 
 async function displayLetter(letter) {
     currentLetter = letter;
-    highlighterActive = false;
-
-highlightButton.classList.remove(
-    "active"
-);
 
     currentLetterHeading.textContent =
         letter;
 
     editor.innerHTML =
         loadLetter(letter);
+
+    savedSelection = null;
+
+    highlightButton?.classList.remove(
+        "active"
+    );
 
     updateActiveTab();
 
@@ -833,11 +849,6 @@ async function openBook() {
     bookScreen.classList.remove(
         "hidden"
     );
-
-    /*
-    Load A directly without first saving an
-    empty editor over the existing A page.
-    */
 
     await displayLetter("A");
 }
@@ -895,17 +906,26 @@ function saveSelection() {
 function restoreSelection() {
     if (!savedSelection) {
         editor.focus();
-        return;
+        return false;
     }
 
-    const selection =
-        window.getSelection();
+    try {
+        const selection =
+            window.getSelection();
 
-    selection.removeAllRanges();
+        selection.removeAllRanges();
 
-    selection.addRange(
-        savedSelection
-    );
+        selection.addRange(
+            savedSelection
+        );
+
+        return true;
+    } catch (error) {
+        savedSelection = null;
+        editor.focus();
+
+        return false;
+    }
 }
 
 function getSelectionRectangle() {
@@ -922,34 +942,7 @@ function getSelectionRectangle() {
     const range =
         selection.getRangeAt(0);
 
-    let rectangle =
-        range.getBoundingClientRect();
-
-    if (
-        rectangle.width === 0 &&
-        rectangle.height === 0
-    ) {
-        const marker =
-            document.createElement(
-                "span"
-            );
-
-        marker.textContent =
-            "\u200b";
-
-        range.insertNode(marker);
-
-        rectangle =
-            marker.getBoundingClientRect();
-
-        marker.remove();
-
-        selection.removeAllRanges();
-
-        selection.addRange(range);
-    }
-
-    return rectangle;
+    return range.getBoundingClientRect();
 }
 
 /* =====================================================
@@ -973,7 +966,7 @@ function showFormattingToolbar() {
 }
 
 function hideFormattingToolbar() {
-    formatToolbar.classList.add(
+    formatToolbar?.classList.add(
         "hidden"
     );
 
@@ -982,6 +975,7 @@ function hideFormattingToolbar() {
 
 function positionFormattingToolbar() {
     if (
+        !formatToolbar ||
         formatToolbar.classList.contains(
             "hidden"
         )
@@ -1189,6 +1183,236 @@ function toggleColorMenu() {
 }
 
 /* =====================================================
+   HIGHLIGHTER
+   ===================================================== */
+
+function colorLooksYellow(colorValue) {
+    if (!colorValue) {
+        return false;
+    }
+
+    const color =
+        String(colorValue)
+            .toLowerCase()
+            .replace(/\s/g, "");
+
+    return (
+        color.includes("#ffe04d") ||
+        color.includes("rgb(255,224,77)") ||
+        color.includes("rgba(255,224,77")
+    );
+}
+
+function selectionHasYellowHighlight() {
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0
+    ) {
+        return false;
+    }
+
+    let element =
+        selection.anchorNode;
+
+    if (
+        element &&
+        element.nodeType !==
+            Node.ELEMENT_NODE
+    ) {
+        element =
+            element.parentElement;
+    }
+
+    while (
+        element &&
+        element !== editor
+    ) {
+        const inlineBackground =
+            element.style
+                ?.backgroundColor;
+
+        const computedBackground =
+            window
+                .getComputedStyle(element)
+                .backgroundColor;
+
+        if (
+            colorLooksYellow(
+                inlineBackground
+            ) ||
+            colorLooksYellow(
+                computedBackground
+            )
+        ) {
+            return true;
+        }
+
+        element =
+            element.parentElement;
+    }
+
+    try {
+        return colorLooksYellow(
+            document.queryCommandValue(
+                "hiliteColor"
+            )
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
+function placePlainCursorAfterSelection() {
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0
+    ) {
+        return;
+    }
+
+    const endingRange =
+        selection.getRangeAt(0)
+            .cloneRange();
+
+    endingRange.collapse(false);
+
+    const marker =
+        document.createElement("span");
+
+    marker.className =
+        "highlight-cursor-marker";
+
+    marker.style.backgroundColor =
+        "transparent";
+
+    marker.style.background =
+        "transparent";
+
+    marker.appendChild(
+        document.createTextNode(
+            "\u200B"
+        )
+    );
+
+    endingRange.insertNode(marker);
+
+    const cursorRange =
+        document.createRange();
+
+    cursorRange.selectNodeContents(
+        marker
+    );
+
+    cursorRange.collapse(false);
+
+    selection.removeAllRanges();
+
+    selection.addRange(cursorRange);
+
+    savedSelection =
+        cursorRange.cloneRange();
+}
+
+function highlightSelection() {
+    restoreSelection();
+
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0 ||
+        selection.isCollapsed ||
+        !selectionIsInsideEditor()
+    ) {
+        window.alert(
+            "Select the words you want to highlight first."
+        );
+
+        return;
+    }
+
+    editor.focus();
+
+    const removeHighlight =
+        selectionHasYellowHighlight();
+
+    try {
+        document.execCommand(
+            "styleWithCSS",
+            false,
+            true
+        );
+
+        if (removeHighlight) {
+            let successful =
+                document.execCommand(
+                    "hiliteColor",
+                    false,
+                    "transparent"
+                );
+
+            if (!successful) {
+                successful =
+                    document.execCommand(
+                        "backColor",
+                        false,
+                        "transparent"
+                    );
+            }
+        } else {
+            let successful =
+                document.execCommand(
+                    "hiliteColor",
+                    false,
+                    "#ffe04d"
+                );
+
+            if (!successful) {
+                successful =
+                    document.execCommand(
+                        "backColor",
+                        false,
+                        "#ffe04d"
+                    );
+            }
+        }
+    } catch (error) {
+        console.error(
+            "Unable to apply highlighter:",
+            error
+        );
+
+        document.execCommand(
+            "backColor",
+            false,
+            removeHighlight
+                ? "transparent"
+                : "#ffe04d"
+        );
+    }
+
+    /*
+    Place the cursor inside a separate transparent
+    span so new typing will not remain highlighted.
+    */
+
+    placePlainCursorAfterSelection();
+
+    highlightButton.classList.remove(
+        "active"
+    );
+
+    scheduleSave();
+}
+
+/* =====================================================
    CHECKLISTS
    ===================================================== */
 
@@ -1256,106 +1480,139 @@ function updateChecklistItem(
 }
 
 /* =====================================================
-   YELLOW HIGHLIGHTER
+   INSERT CONTENT AT CURSOR
    ===================================================== */
 
-function highlightSelection() {
+function insertNodeAtSelection(node) {
     restoreSelection();
+
+    editor.focus();
 
     const selection =
         window.getSelection();
 
     if (
         !selection ||
-        selection.rangeCount === 0 ||
-        selection.isCollapsed
+        selection.rangeCount === 0
     ) {
-        window.alert(
-            "Select the words you want to highlight first."
+        editor.appendChild(node);
+
+        editor.appendChild(
+            document.createElement(
+                "br"
+            )
         );
 
         return;
     }
 
-    editor.focus();
+    const range =
+        selection.getRangeAt(0);
 
-    try {
-        document.execCommand(
-            "styleWithCSS",
-            false,
-            true
-        );
+    range.deleteContents();
 
-        const successful =
-            document.execCommand(
-                "hiliteColor",
-                false,
-                "#ffe04d"
-            );
+    range.insertNode(node);
 
-        if (!successful) {
-            document.execCommand(
-                "backColor",
-                false,
-                "#ffe04d"
-            );
-        }
-    } catch (error) {
-        document.execCommand(
-            "backColor",
-            false,
-            "#ffe04d"
-        );
-    }
+    const spacer =
+        document.createElement("div");
 
-    /*
-    Move the cursor to the end of the
-    highlighted words.
-    */
+    spacer.innerHTML = "<br>";
 
-    const endingRange =
-        selection.getRangeAt(0)
-            .cloneRange();
+    node.after(spacer);
 
-    endingRange.collapse(false);
+    range.setStartAfter(spacer);
+
+    range.collapse(true);
 
     selection.removeAllRanges();
-    selection.addRange(endingRange);
 
-    /*
-    Turn off the yellow background for
-    anything typed after the selection.
-    */
+    selection.addRange(range);
 
-    try {
-        document.execCommand(
-            "hiliteColor",
-            false,
-            "transparent"
+    saveSelection();
+}
+
+/* =====================================================
+   PHOTOS
+   ===================================================== */
+
+async function insertPhoto(file) {
+    if (!file) {
+        return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+        window.alert(
+            "Please select an image file."
         );
 
-        document.execCommand(
-            "backColor",
-            false,
-            "transparent"
+        return;
+    }
+
+    const assetId =
+        createUniqueId("photo");
+
+    const asset = {
+        id: assetId,
+        type: "photo",
+        name:
+            file.name ||
+            "Photograph",
+        mimeType:
+            file.type ||
+            "image/jpeg",
+        size: file.size,
+        created:
+            new Date().toISOString(),
+        blob: file
+    };
+
+    try {
+        showSaveStatus(
+            "Adding photo...",
+            "saving"
+        );
+
+        await saveAsset(asset);
+
+        const image =
+            document.createElement(
+                "img"
+            );
+
+        image.dataset.assetId =
+            assetId;
+
+        image.src =
+            getAssetObjectUrl(asset);
+
+        image.alt =
+            asset.name;
+
+        image.setAttribute(
+            "contenteditable",
+            "false"
+        );
+
+        insertNodeAtSelection(image);
+
+        saveCurrentLetter();
+
+        showSaveStatus(
+            "Photo added"
         );
     } catch (error) {
         console.error(
-            "Unable to reset highlighter:",
+            "Unable to add photograph:",
             error
         );
+
+        window.alert(
+            "The photograph could not be added. Please try a smaller image."
+        );
+    } finally {
+        photoInput.value = "";
     }
-
-    savedSelection =
-        endingRange.cloneRange();
-
-    highlightButton.classList.remove(
-        "active"
-    );
-
-    scheduleSave();
 }
-
 
 /* =====================================================
    DOCUMENT ATTACHMENTS
@@ -1477,6 +1734,7 @@ function getPlainTextFromHtml(html) {
         temporaryElement.innerText ||
         ""
     )
+        .replace(/\u200B/g, "")
         .replace(/\s+/g, " ")
         .trim();
 }
@@ -1708,6 +1966,14 @@ async function exportCurrentPageAsPdf() {
             ".page-area"
         );
 
+    if (!pageArea) {
+        window.alert(
+            "The page could not be found."
+        );
+
+        return;
+    }
+
     const printableCopy =
         pageArea.cloneNode(true);
 
@@ -1715,9 +1981,12 @@ async function exportCurrentPageAsPdf() {
         "pdf-export-page"
     );
 
-    printableCopy.querySelector(
-        "#editor"
-    ).removeAttribute(
+    const copiedEditor =
+        printableCopy.querySelector(
+            "#editor"
+        );
+
+    copiedEditor?.removeAttribute(
         "contenteditable"
     );
 
@@ -1928,7 +2197,7 @@ function downloadJsonFile(
 }
 
 /* =====================================================
-   DOWNLOAD COMPLETE BACKUP
+   DOWNLOAD BACKUP
    ===================================================== */
 
 async function downloadBackup() {
@@ -1978,7 +2247,7 @@ async function downloadBackup() {
             application:
                 "Grandma's Alphabet Book",
 
-            version: "2.5.0",
+            version: "2.5.1",
 
             created:
                 new Date().toISOString(),
@@ -2051,9 +2320,7 @@ async function readBackupFile(file) {
     return backup;
 }
 
-async function restoreBackup(
-    backup
-) {
+async function restoreBackup(backup) {
     try {
         showSaveStatus(
             "Restoring...",
@@ -2128,7 +2395,7 @@ async function restoreBackup(
 }
 
 /* =====================================================
-   EVENT LISTENERS: BOOK
+   BOOK EVENTS
    ===================================================== */
 
 openBookButton.addEventListener(
@@ -2203,13 +2470,14 @@ editor.addEventListener(
 );
 
 /* =====================================================
-   EVENT LISTENERS: FORMATTING
+   TOOLBAR EVENTS
    ===================================================== */
 
 undoButton.addEventListener(
     "mousedown",
     (event) => {
         event.preventDefault();
+
         runEditorCommand("undo");
     }
 );
@@ -2218,6 +2486,7 @@ redoButton.addEventListener(
     "mousedown",
     (event) => {
         event.preventDefault();
+
         runEditorCommand("redo");
     }
 );
@@ -2226,6 +2495,7 @@ boldButton.addEventListener(
     "mousedown",
     (event) => {
         event.preventDefault();
+
         runEditorCommand("bold");
     }
 );
@@ -2234,6 +2504,7 @@ italicButton.addEventListener(
     "mousedown",
     (event) => {
         event.preventDefault();
+
         runEditorCommand("italic");
     }
 );
@@ -2265,7 +2536,10 @@ highlightButton.addEventListener(
     (event) => {
         event.preventDefault();
 
-        saveSelection();
+        /*
+        The selection was saved before the toolbar
+        button took focus.
+        */
 
         highlightSelection();
     }
@@ -2303,7 +2577,7 @@ attachmentButton.addEventListener(
 );
 
 /* =====================================================
-   EVENT LISTENERS: SIZE OPTIONS
+   SIZE OPTIONS
    ===================================================== */
 
 document.querySelectorAll(
@@ -2337,7 +2611,7 @@ document.querySelectorAll(
 });
 
 /* =====================================================
-   EVENT LISTENERS: COLOR OPTIONS
+   COLOR OPTIONS
    ===================================================== */
 
 document.querySelectorAll(
@@ -2364,7 +2638,7 @@ document.querySelectorAll(
 });
 
 /* =====================================================
-   EVENT LISTENERS: FILES
+   FILE EVENTS
    ===================================================== */
 
 photoInput.addEventListener(
@@ -2388,7 +2662,7 @@ attachmentInput.addEventListener(
 );
 
 /* =====================================================
-   EVENT LISTENERS: SEARCH
+   SEARCH EVENTS
    ===================================================== */
 
 searchButton.addEventListener(
@@ -2411,7 +2685,7 @@ searchInput.addEventListener(
 );
 
 /* =====================================================
-   EVENT LISTENERS: PDF
+   PDF EVENT
    ===================================================== */
 
 exportPdfButton.addEventListener(
@@ -2420,7 +2694,7 @@ exportPdfButton.addEventListener(
 );
 
 /* =====================================================
-   EVENT LISTENERS: BACKUP
+   BACKUP EVENTS
    ===================================================== */
 
 backupButton.addEventListener(
@@ -2514,7 +2788,7 @@ confirmRestoreButton.addEventListener(
 );
 
 /* =====================================================
-   CLOSE WINDOWS BY CLICKING OUTSIDE
+   MODAL BACKGROUND EVENTS
    ===================================================== */
 
 [
@@ -2686,9 +2960,6 @@ document.addEventListener(
 
 /* =====================================================
    PLAIN-TEXT PASTING
-
-   This prevents copied website formatting from
-   disrupting the vintage notebook appearance.
    ===================================================== */
 
 editor.addEventListener(
@@ -2744,9 +3015,6 @@ if (
 
 /* =====================================================
    START THE APP
-
-   Do not use openLetter("A") here because it would
-   save the empty editor over the existing A page.
    ===================================================== */
 
 async function startApp() {
