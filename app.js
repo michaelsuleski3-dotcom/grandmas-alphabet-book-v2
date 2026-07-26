@@ -232,7 +232,6 @@ let saveTimer = null;
 let saveStatusTimer = null;
 
 let savedSelection = null;
-let highlighterActive = false;
 
 let pendingBackup = null;
 
@@ -1262,10 +1261,29 @@ function updateChecklistItem(
 
 function highlightSelection() {
     restoreSelection();
-    editor.focus();
 
-    highlighterActive =
-        !highlighterActive;
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0 ||
+        selection.isCollapsed
+    ) {
+        window.alert(
+            "Select the words you want to highlight first."
+        );
+
+        highlighterActive = false;
+
+        highlightButton.classList.remove(
+            "active"
+        );
+
+        return;
+    }
+
+    editor.focus();
 
     try {
         document.execCommand(
@@ -1274,53 +1292,43 @@ function highlightSelection() {
             true
         );
 
-        if (highlighterActive) {
-            const successful =
-                document.execCommand(
-                    "hiliteColor",
-                    false,
-                    "#ffe04d"
-                );
+        const successful =
+            document.execCommand(
+                "hiliteColor",
+                false,
+                "#ffe04d"
+            );
 
-            if (!successful) {
-                document.execCommand(
-                    "backColor",
-                    false,
-                    "#ffe04d"
-                );
-            }
-        } else {
-            const successful =
-                document.execCommand(
-                    "hiliteColor",
-                    false,
-                    "transparent"
-                );
-
-            if (!successful) {
-                document.execCommand(
-                    "backColor",
-                    false,
-                    "transparent"
-                );
-            }
+        if (!successful) {
+            document.execCommand(
+                "backColor",
+                false,
+                "#ffe04d"
+            );
         }
     } catch (error) {
         document.execCommand(
             "backColor",
             false,
-            highlighterActive
-                ? "#ffe04d"
-                : "transparent"
+            "#ffe04d"
         );
     }
 
-    highlightButton.classList.toggle(
-        "active",
-        highlighterActive
+    /*
+    Immediately turn the highlighter off so
+    newly typed text is not highlighted.
+    */
+
+    highlighterActive = false;
+
+    highlightButton.classList.remove(
+        "active"
     );
 
-    saveSelection();
+    savedSelection = null;
+
+    editor.focus();
+
     scheduleSave();
 }
 /* =====================================================
@@ -2364,6 +2372,8 @@ highlightButton.addEventListener(
     "mousedown",
     (event) => {
         event.preventDefault();
+
+        saveSelection();
 
         highlightSelection();
     }
