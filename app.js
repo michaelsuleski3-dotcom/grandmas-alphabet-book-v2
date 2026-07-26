@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.5.1
+   Version 2.6.0
    ===================================================== */
 
 "use strict";
@@ -14,6 +14,9 @@ const alphabet =
 
 const STORAGE_PREFIX =
     "grandmas-alphabet-book-v2-";
+
+const LAST_LETTER_KEY =
+    "grandmas-alphabet-book-last-letter";
 
 const DATABASE_NAME =
     "grandmas-alphabet-book-assets";
@@ -72,6 +75,11 @@ const backupButton =
 const formatToolbar =
     document.getElementById(
         "format-toolbar"
+    );
+
+const closeToolbarButton =
+    document.getElementById(
+        "close-toolbar-button"
     );
 
 const undoButton =
@@ -370,10 +378,6 @@ function prepareEditorHtmlForStorage() {
         }
     });
 
-    /*
-    Remove invisible cursor markers before saving.
-    */
-
     copy.querySelectorAll(
         ".highlight-cursor-marker"
     ).forEach((marker) => {
@@ -631,6 +635,10 @@ async function clearAllAssets() {
 }
 
 /* =====================================================
+   END OF SECTION 1
+   Paste Section 2 immediately below this line.
+   ===================================================== */
+   /* =====================================================
    OBJECT URL MANAGEMENT
    ===================================================== */
 
@@ -804,6 +812,18 @@ function updateActiveTab() {
 async function displayLetter(letter) {
     currentLetter = letter;
 
+    try {
+        localStorage.setItem(
+            LAST_LETTER_KEY,
+            letter
+        );
+    } catch (error) {
+        console.warn(
+            "Unable to remember the current letter:",
+            error
+        );
+    }
+
     currentLetterHeading.textContent =
         letter;
 
@@ -850,7 +870,32 @@ async function openBook() {
         "hidden"
     );
 
-    await displayLetter("A");
+    let startingLetter = "A";
+
+    try {
+        const rememberedLetter =
+            localStorage.getItem(
+                LAST_LETTER_KEY
+            );
+
+        if (
+            alphabet.includes(
+                rememberedLetter
+            )
+        ) {
+            startingLetter =
+                rememberedLetter;
+        }
+    } catch (error) {
+        console.warn(
+            "Unable to load the last page:",
+            error
+        );
+    }
+
+    await displayLetter(
+        startingLetter
+    );
 }
 
 /* =====================================================
@@ -886,6 +931,19 @@ function selectionIsInsideEditor() {
     );
 }
 
+function selectionContainsWords() {
+    const selection =
+        window.getSelection();
+
+    return Boolean(
+        selection &&
+        selection.rangeCount > 0 &&
+        !selection.isCollapsed &&
+        selection.toString().trim() !== "" &&
+        selectionIsInsideEditor()
+    );
+}
+
 function saveSelection() {
     const selection =
         window.getSelection();
@@ -906,12 +964,17 @@ function saveSelection() {
 function restoreSelection() {
     if (!savedSelection) {
         editor.focus();
+
         return false;
     }
 
     try {
         const selection =
             window.getSelection();
+
+        if (!selection) {
+            return false;
+        }
 
         selection.removeAllRanges();
 
@@ -922,9 +985,19 @@ function restoreSelection() {
         return true;
     } catch (error) {
         savedSelection = null;
+
         editor.focus();
 
         return false;
+    }
+}
+
+function clearBrowserSelection() {
+    const selection =
+        window.getSelection();
+
+    if (selection) {
+        selection.removeAllRanges();
     }
 }
 
@@ -942,6 +1015,15 @@ function getSelectionRectangle() {
     const range =
         selection.getRangeAt(0);
 
+    const rectangles =
+        range.getClientRects();
+
+    if (rectangles.length > 0) {
+        return rectangles[
+            rectangles.length - 1
+        ];
+    }
+
     return range.getBoundingClientRect();
 }
 
@@ -950,13 +1032,15 @@ function getSelectionRectangle() {
    ===================================================== */
 
 function showFormattingToolbar() {
-    if (!selectionIsInsideEditor()) {
+    if (!selectionContainsWords()) {
+        hideFormattingToolbar();
+
         return;
     }
 
     saveSelection();
 
-    formatToolbar.classList.remove(
+    formatToolbar?.classList.remove(
         "hidden"
     );
 
@@ -973,6 +1057,16 @@ function hideFormattingToolbar() {
     closeAllFormattingMenus();
 }
 
+function finishToolbarAction() {
+    savedSelection = null;
+
+    closeAllFormattingMenus();
+
+    hideFormattingToolbar();
+
+    clearBrowserSelection();
+}
+
 function positionFormattingToolbar() {
     if (
         !formatToolbar ||
@@ -983,14 +1077,15 @@ function positionFormattingToolbar() {
         return;
     }
 
-    if (
-        window.innerWidth <= 560
-    ) {
+    if (window.innerWidth <= 560) {
         formatToolbar.style.left =
             "8px";
 
         formatToolbar.style.top =
             "auto";
+
+        formatToolbar.style.right =
+            "8px";
 
         formatToolbar.style.bottom =
             "8px";
@@ -1004,6 +1099,9 @@ function positionFormattingToolbar() {
     if (!rectangle) {
         return;
     }
+
+    formatToolbar.style.right =
+        "auto";
 
     const toolbarWidth =
         formatToolbar.offsetWidth;
@@ -1049,32 +1147,43 @@ function positionFormattingToolbar() {
 
 function updateToolbarState() {
     try {
-        boldButton.classList.toggle(
+        boldButton?.classList.toggle(
             "active",
             document.queryCommandState(
                 "bold"
             )
         );
 
-        italicButton.classList.toggle(
+        italicButton?.classList.toggle(
             "active",
             document.queryCommandState(
                 "italic"
             )
         );
 
-        undoButton.disabled =
-            !document.queryCommandEnabled(
-                "undo"
-            );
+        if (undoButton) {
+            undoButton.disabled =
+                !document
+                    .queryCommandEnabled(
+                        "undo"
+                    );
+        }
 
-        redoButton.disabled =
-            !document.queryCommandEnabled(
-                "redo"
-            );
+        if (redoButton) {
+            redoButton.disabled =
+                !document
+                    .queryCommandEnabled(
+                        "redo"
+                    );
+        }
     } catch (error) {
-        undoButton.disabled = false;
-        redoButton.disabled = false;
+        if (undoButton) {
+            undoButton.disabled = false;
+        }
+
+        if (redoButton) {
+            redoButton.disabled = false;
+        }
     }
 }
 
@@ -1082,15 +1191,29 @@ function runEditorCommand(
     command,
     value = null
 ) {
-    restoreSelection();
+    const restored =
+        restoreSelection();
+
+    if (!restored) {
+        finishToolbarAction();
+
+        return;
+    }
 
     editor.focus();
 
-    document.execCommand(
-        command,
-        false,
-        value
-    );
+    try {
+        document.execCommand(
+            command,
+            false,
+            value
+        );
+    } catch (error) {
+        console.error(
+            `Unable to run ${command}:`,
+            error
+        );
+    }
 
     scheduleSave();
 
@@ -1098,13 +1221,16 @@ function runEditorCommand(
 
     editor.focus();
 }
-}
 
 /* =====================================================
    SIZE AND COLOR MENUS
    ===================================================== */
 
 function positionMenu(menu, button) {
+    if (!menu || !button) {
+        return;
+    }
+
     const buttonRectangle =
         button.getBoundingClientRect();
 
@@ -1150,6 +1276,10 @@ function positionMenu(menu, button) {
 }
 
 function toggleSizeMenu() {
+    if (!sizeMenu) {
+        return;
+    }
+
     const shouldOpen =
         sizeMenu.classList.contains(
             "hidden"
@@ -1166,6 +1296,10 @@ function toggleSizeMenu() {
 }
 
 function toggleColorMenu() {
+    if (!colorMenu) {
+        return;
+    }
+
     const shouldOpen =
         colorMenu.classList.contains(
             "hidden"
@@ -1182,27 +1316,18 @@ function toggleColorMenu() {
 }
 
 /* =====================================================
-   HIGHLIGHTER
+   END OF SECTION 2
+   Paste Section 3 immediately below this line.
+   ===================================================== */
+   /* =====================================================
+   MANUAL TEXT WRAPPING
    ===================================================== */
 
-function colorLooksYellow(colorValue) {
-    if (!colorValue) {
-        return false;
+function getSelectedRange() {
+    if (!restoreSelection()) {
+        return null;
     }
 
-    const color =
-        String(colorValue)
-            .toLowerCase()
-            .replace(/\s/g, "");
-
-    return (
-        color.includes("#ffe04d") ||
-        color.includes("rgb(255,224,77)") ||
-        color.includes("rgba(255,224,77")
-    );
-}
-
-function selectionHasYellowHighlight() {
     const selection =
         window.getSelection();
 
@@ -1210,270 +1335,122 @@ function selectionHasYellowHighlight() {
         !selection ||
         selection.rangeCount === 0
     ) {
-        return false;
+        return null;
     }
 
+    return selection.getRangeAt(0);
+}
+
+function unwrapElement(element) {
+    const parent =
+        element.parentNode;
+
+    if (!parent) {
+        return;
+    }
+
+    while (element.firstChild) {
+        parent.insertBefore(
+            element.firstChild,
+            element
+        );
+    }
+
+    parent.removeChild(element);
+
+    parent.normalize();
+}
+
+function findClosestHighlight(node) {
     let element =
-        selection.anchorNode;
-
-    if (
-        element &&
-        element.nodeType !==
-            Node.ELEMENT_NODE
-    ) {
-        element =
-            element.parentElement;
-    }
+        node.nodeType ===
+        Node.ELEMENT_NODE
+            ? node
+            : node.parentElement;
 
     while (
         element &&
         element !== editor
     ) {
-        const inlineBackground =
-            element.style
-                ?.backgroundColor;
-
-        const computedBackground =
-            window
-                .getComputedStyle(element)
-                .backgroundColor;
-
         if (
-            colorLooksYellow(
-                inlineBackground
-            ) ||
-            colorLooksYellow(
-                computedBackground
+            element.classList?.contains(
+                "yellow-highlight"
             )
         ) {
-            return true;
+            return element;
         }
 
         element =
             element.parentElement;
     }
 
-    try {
-        return colorLooksYellow(
-            document.queryCommandValue(
-                "hiliteColor"
-            )
-        );
-    } catch (error) {
-        return false;
-    }
+    return null;
 }
 
-function placePlainCursorAfterSelection() {
-    const selection =
-        window.getSelection();
+function applyHighlight() {
+    const range =
+        getSelectedRange();
 
     if (
-        !selection ||
-        selection.rangeCount === 0
+        !range ||
+        range.collapsed
     ) {
-        return;
-    }
-
-    const endingRange =
-        selection.getRangeAt(0)
-            .cloneRange();
-
-    endingRange.collapse(false);
-
-    const marker =
-        document.createElement("span");
-
-    marker.className =
-        "highlight-cursor-marker";
-
-    marker.style.backgroundColor =
-        "transparent";
-
-    marker.style.background =
-        "transparent";
-
-    marker.appendChild(
-        document.createTextNode(
-            "\u200B"
-        )
-    );
-
-    endingRange.insertNode(marker);
-
-    const cursorRange =
-        document.createRange();
-
-    cursorRange.selectNodeContents(
-        marker
-    );
-
-    cursorRange.collapse(false);
-
-    selection.removeAllRanges();
-
-    selection.addRange(cursorRange);
-
-    savedSelection =
-        cursorRange.cloneRange();
-}
-function finishToolbarAction() {
-    savedSelection = null;
-
-    closeAllFormattingMenus();
-
-    hideFormattingToolbar();
-
-    const selection =
-        window.getSelection();
-
-    if (selection) {
-        selection.removeAllRanges();
-    }
-}
-function highlightSelection() {
-    restoreSelection();
-
-    const selection =
-        window.getSelection();
-
-    if (
-        !selection ||
-        selection.rangeCount === 0 ||
-        selection.isCollapsed ||
-        !selectionIsInsideEditor()
-    ) {
-        window.alert(
-            "Select the words you want to highlight first."
-        );
-
         finishToolbarAction();
 
         return;
     }
 
-    const range =
-        selection.getRangeAt(0);
+    const startHighlight =
+        findClosestHighlight(
+            range.startContainer
+        );
 
-    /*
-    Check whether the selected text is already
-    inside a yellow highlight.
-    */
-
-    let selectedElement =
-        range.commonAncestorContainer;
-
-    if (
-        selectedElement.nodeType !==
-        Node.ELEMENT_NODE
-    ) {
-        selectedElement =
-            selectedElement.parentElement;
-    }
-
-    const highlightedParent =
-        selectedElement?.closest(
-            ".yellow-highlight"
+    const endHighlight =
+        findClosestHighlight(
+            range.endContainer
         );
 
     if (
-        highlightedParent &&
-        editor.contains(
-            highlightedParent
-        )
+        startHighlight &&
+        startHighlight === endHighlight
     ) {
-        /*
-        Remove an existing highlight.
-        */
-
-        const parent =
-            highlightedParent.parentNode;
-
-        while (
-            highlightedParent.firstChild
-        ) {
-            parent.insertBefore(
-                highlightedParent.firstChild,
-                highlightedParent
-            );
-        }
-
-        highlightedParent.remove();
-
-        parent.normalize();
-    } else {
-        /*
-        Highlight only the selected words.
-        */
-
-        const highlight =
-            document.createElement(
-                "span"
-            );
-
-        highlight.className =
-            "yellow-highlight";
-
-        highlight.style.backgroundColor =
-            "#ffe04d";
-
-        highlight.style.color =
-            "inherit";
-
-        try {
-            range.surroundContents(
-                highlight
-            );
-        } catch (error) {
-            /*
-            This fallback handles selections that
-            cross more than one formatting element.
-            */
-
-            const selectedContents =
-                range.extractContents();
-
-            highlight.appendChild(
-                selectedContents
-            );
-
-            range.insertNode(
-                highlight
-            );
-        }
-
-        /*
-        Place the cursor after the highlighted span,
-        not inside it. New typing will therefore not
-        continue highlighting.
-        */
-
-        const plainTextMarker =
-            document.createTextNode(
-                "\u200B"
-            );
-
-        highlight.after(
-            plainTextMarker
+        unwrapElement(
+            startHighlight
         );
 
-        const cursorRange =
-            document.createRange();
+        scheduleSave();
 
-        cursorRange.setStartAfter(
-            plainTextMarker
-        );
+        finishToolbarAction();
 
-        cursorRange.collapse(true);
+        editor.focus();
 
-        selection.removeAllRanges();
-
-        selection.addRange(
-            cursorRange
-        );
+        return;
     }
 
-    editor.normalize();
+    const wrapper =
+        document.createElement(
+            "span"
+        );
+
+    wrapper.className =
+        "yellow-highlight";
+
+    try {
+        range.surroundContents(
+            wrapper
+        );
+    } catch (error) {
+        const fragment =
+            range.extractContents();
+
+        wrapper.appendChild(
+            fragment
+        );
+
+        range.insertNode(
+            wrapper
+        );
+    }
 
     scheduleSave();
 
@@ -1483,465 +1460,802 @@ function highlightSelection() {
 }
 
 /* =====================================================
-   CHECKLISTS
+   TEXT SIZE
    ===================================================== */
 
-function insertChecklist() {
-    restoreSelection();
-
-    editor.focus();
-
-    const checklistHtml = `
-        <ul class="checklist">
-            <li class="checklist-item">
-                <input
-                    type="checkbox"
-                    aria-label="Checklist item"
-                >
-                <span
-                    class="checklist-text"
-                    contenteditable="true"
-                >New item</span>
-            </li>
-        </ul>
-        <div><br></div>
-    `;
-
-    document.execCommand(
-        "insertHTML",
-        false,
-        checklistHtml
-    );
-
-    scheduleSave();
-
-    hideFormattingToolbar();
-
-    savedSelection = null;
-
-    editor.focus();
-}
-}
-
-/* =====================================================
-   INSERT CONTENT AT CURSOR
-   ===================================================== */
-
-function insertNodeAtSelection(node) {
-    restoreSelection();
-
-    editor.focus();
-
-    const selection =
-        window.getSelection();
+function applyFontSize(size) {
+    const range =
+        getSelectedRange();
 
     if (
-        !selection ||
-        selection.rangeCount === 0
+        !range ||
+        range.collapsed
     ) {
-        editor.appendChild(node);
-
-        editor.appendChild(
-            document.createElement(
-                "br"
-            )
-        );
+        finishToolbarAction();
 
         return;
     }
 
+    const wrapper =
+        document.createElement(
+            "span"
+        );
+
+    wrapper.style.fontSize =
+        size;
+
+    try {
+        range.surroundContents(
+            wrapper
+        );
+    } catch (error) {
+        const fragment =
+            range.extractContents();
+
+        wrapper.appendChild(
+            fragment
+        );
+
+        range.insertNode(
+            wrapper
+        );
+    }
+
+    scheduleSave();
+
+    finishToolbarAction();
+
+    editor.focus();
+}
+
+/* =====================================================
+   TEXT COLOR
+   ===================================================== */
+
+function applyTextColor(color) {
     const range =
-        selection.getRangeAt(0);
+        getSelectedRange();
 
-    range.deleteContents();
+    if (
+        !range ||
+        range.collapsed
+    ) {
+        finishToolbarAction();
 
-    range.insertNode(node);
+        return;
+    }
 
-    const spacer =
-        document.createElement("div");
+    const wrapper =
+        document.createElement(
+            "span"
+        );
 
-    spacer.innerHTML = "<br>";
+    wrapper.style.color =
+        color;
 
-    node.after(spacer);
+    try {
+        range.surroundContents(
+            wrapper
+        );
+    } catch (error) {
+        const fragment =
+            range.extractContents();
 
-    range.setStartAfter(spacer);
+        wrapper.appendChild(
+            fragment
+        );
+
+        range.insertNode(
+            wrapper
+        );
+    }
+
+    scheduleSave();
+
+    finishToolbarAction();
+
+    editor.focus();
+}
+
+/* =====================================================
+   CURSOR PLACEMENT
+   ===================================================== */
+
+function placeCursorAfter(element) {
+    const selection =
+        window.getSelection();
+
+    const range =
+        document.createRange();
+
+    range.setStartAfter(element);
 
     range.collapse(true);
 
     selection.removeAllRanges();
 
     selection.addRange(range);
+}
 
-    saveSelection();
+function placeCursorInsideEnd(element) {
+    const selection =
+        window.getSelection();
+
+    const range =
+        document.createRange();
+
+    range.selectNodeContents(
+        element
+    );
+
+    range.collapse(false);
+
+    selection.removeAllRanges();
+
+    selection.addRange(range);
+}
+
+function insertNodeAtSelection(node) {
+    editor.focus();
+
+    const selection =
+        window.getSelection();
+
+    if (
+        savedSelection &&
+        restoreSelection()
+    ) {
+        const range =
+            selection.getRangeAt(0);
+
+        range.deleteContents();
+
+        range.insertNode(node);
+
+        placeCursorAfter(node);
+
+        return;
+    }
+
+    if (
+        selection &&
+        selection.rangeCount > 0 &&
+        selectionIsInsideEditor()
+    ) {
+        const range =
+            selection.getRangeAt(0);
+
+        range.deleteContents();
+
+        range.insertNode(node);
+
+        placeCursorAfter(node);
+
+        return;
+    }
+
+    editor.appendChild(node);
+
+    placeCursorAfter(node);
 }
 
 /* =====================================================
-   PHOTOS
+   CHECKLISTS
    ===================================================== */
 
-async function insertPhoto(file) {
-    if (!file) {
+function createChecklistItem(
+    text = "",
+    checked = false
+) {
+    const item =
+        document.createElement(
+            "div"
+        );
+
+    item.className =
+        "checklist-item";
+
+    const checkbox =
+        document.createElement(
+            "input"
+        );
+
+    checkbox.type =
+        "checkbox";
+
+    checkbox.checked =
+        checked;
+
+    checkbox.setAttribute(
+        "aria-label",
+        "Checklist item"
+    );
+
+    const itemText =
+        document.createElement(
+            "span"
+        );
+
+    itemText.className =
+        "checklist-text";
+
+    itemText.contentEditable =
+        "true";
+
+    itemText.textContent =
+        text;
+
+    item.append(
+        checkbox,
+        itemText
+    );
+
+    return item;
+}
+
+function insertChecklist() {
+    hideFormattingToolbar();
+
+    const checklist =
+        createChecklistItem();
+
+    insertNodeAtSelection(
+        checklist
+    );
+
+    const lineBreak =
+        document.createElement(
+            "div"
+        );
+
+    lineBreak.innerHTML =
+        "<br>";
+
+    checklist.after(
+        lineBreak
+    );
+
+    const checklistText =
+        checklist.querySelector(
+            ".checklist-text"
+        );
+
+    placeCursorInsideEnd(
+        checklistText
+    );
+
+    checklistText.focus();
+
+    scheduleSave();
+}
+
+function updateChecklistItem(
+    checkbox
+) {
+    if (
+        !checkbox ||
+        checkbox.type !==
+        "checkbox"
+    ) {
         return;
     }
 
-    if (!file.type.startsWith("image/")) {
-        window.alert(
-            "Please select an image file."
+    const item =
+        checkbox.closest(
+            ".checklist-item"
         );
 
+    if (!item) {
         return;
     }
 
-    const assetId =
-        createUniqueId("photo");
+    item.classList.toggle(
+        "completed",
+        checkbox.checked
+    );
 
-    const asset = {
-        id: assetId,
-        type: "photo",
-        name:
-            file.name ||
-            "Photograph",
-        mimeType:
-            file.type ||
-            "image/jpeg",
-        size: file.size,
-        created:
-            new Date().toISOString(),
-        blob: file
-    };
+    if (checkbox.checked) {
+        checkbox.setAttribute(
+            "checked",
+            ""
+        );
+    } else {
+        checkbox.removeAttribute(
+            "checked"
+        );
+    }
 
-    try {
-        showSaveStatus(
-            "Adding photo...",
-            "saving"
+    scheduleSave();
+}
+
+/* =====================================================
+   PHOTO INSERTION
+   ===================================================== */
+
+async function handlePhotoSelection(
+    event
+) {
+    const files =
+        Array.from(
+            event.target.files || []
         );
 
-        await saveAsset(asset);
+    event.target.value = "";
 
-        const image =
-            document.createElement(
-                "img"
+    if (files.length === 0) {
+        return;
+    }
+
+    hideFormattingToolbar();
+
+    for (const file of files) {
+        if (
+            !file.type.startsWith(
+                "image/"
+            )
+        ) {
+            continue;
+        }
+
+        const assetId =
+            createUniqueId(
+                "photo"
             );
 
-        image.dataset.assetId =
-            assetId;
+        const asset = {
+            id: assetId,
+            name:
+                file.name ||
+                "Photograph",
+            type:
+                file.type ||
+                "image/jpeg",
+            size: file.size,
+            kind: "photo",
+            createdAt:
+                new Date()
+                    .toISOString(),
+            blob: file
+        };
 
-        image.src =
-            getAssetObjectUrl(asset);
+        try {
+            await saveAsset(asset);
 
-        image.alt =
-            asset.name;
+            const figure =
+                document.createElement(
+                    "figure"
+                );
 
-        image.setAttribute(
-            "contenteditable",
-            "false"
-        );
+            figure.className =
+                "editor-photo";
 
-        insertNodeAtSelection(image);
+            figure.contentEditable =
+                "false";
 
-        saveCurrentLetter();
+            const image =
+                document.createElement(
+                    "img"
+                );
 
-        showSaveStatus(
-            "Photo added"
-        );
-    } catch (error) {
-        console.error(
-            "Unable to add photograph:",
-            error
-        );
+            image.dataset.assetId =
+                assetId;
 
-        window.alert(
-            "The photograph could not be added. Please try a smaller image."
-        );
-    } finally {
-        photoInput.value = "";
+            image.alt =
+                asset.name;
+
+            image.src =
+                getAssetObjectUrl(
+                    asset
+                );
+
+            image.loading =
+                "lazy";
+
+            figure.appendChild(
+                image
+            );
+
+            insertNodeAtSelection(
+                figure
+            );
+
+            const paragraph =
+                document.createElement(
+                    "div"
+                );
+
+            paragraph.innerHTML =
+                "<br>";
+
+            figure.after(
+                paragraph
+            );
+
+            placeCursorInsideEnd(
+                paragraph
+            );
+
+            scheduleSave();
+        } catch (error) {
+            console.error(
+                "Unable to save photograph:",
+                error
+            );
+
+            showSaveStatus(
+                "Photo could not be added",
+                "error"
+            );
+        }
     }
+
+    editor.focus();
 }
 
 /* =====================================================
-   DOCUMENT ATTACHMENTS
+   ATTACHMENT INSERTION
    ===================================================== */
 
-async function insertAttachment(file) {
-    if (!file) {
+async function handleAttachmentSelection(
+    event
+) {
+    const files =
+        Array.from(
+            event.target.files || []
+        );
+
+    event.target.value = "";
+
+    if (files.length === 0) {
         return;
     }
 
-    const assetId =
-        createUniqueId("attachment");
+    hideFormattingToolbar();
 
-    const asset = {
-        id: assetId,
-        type: "attachment",
-        name:
-            file.name ||
-            "Attached document",
-        mimeType:
-            file.type ||
-            "application/octet-stream",
-        size: file.size,
-        created:
-            new Date().toISOString(),
-        blob: file
-    };
+    for (const file of files) {
+        const assetId =
+            createUniqueId(
+                "attachment"
+            );
 
-    try {
-        showSaveStatus(
-            "Attaching file...",
-            "saving"
-        );
+        const asset = {
+            id: assetId,
+            name:
+                file.name ||
+                "Attachment",
+            type:
+                file.type ||
+                "application/octet-stream",
+            size: file.size,
+            kind:
+                "attachment",
+            createdAt:
+                new Date()
+                    .toISOString(),
+            blob: file
+        };
 
-        await saveAsset(asset);
+        try {
+            await saveAsset(asset);
 
-        const attachment =
-            document.createElement("a");
+            const attachment =
+                document.createElement(
+                    "a"
+                );
 
-        attachment.className =
-            "attachment-card";
+            attachment.className =
+                "attachment-card";
 
-        attachment.dataset.assetId =
-            assetId;
+            attachment.dataset.assetId =
+                assetId;
 
-        attachment.href =
-            getAssetObjectUrl(asset);
+            attachment.contentEditable =
+                "false";
 
-        attachment.download =
-            asset.name;
+            attachment.href =
+                getAssetObjectUrl(
+                    asset
+                );
 
-        attachment.target =
-            "_blank";
+            attachment.download =
+                asset.name;
 
-        attachment.rel =
-            "noopener";
+            attachment.target =
+                "_blank";
 
-        attachment.setAttribute(
-            "contenteditable",
-            "false"
-        );
+            attachment.rel =
+                "noopener";
 
-        attachment.innerHTML = `
-            <span class="attachment-icon">
-                📎
-            </span>
+            const icon =
+                document.createElement(
+                    "span"
+                );
 
-            <span class="attachment-details">
-                <span class="attachment-name">
-                    ${escapeHtml(asset.name)}
-                </span>
+            icon.className =
+                "attachment-icon";
 
-                <span class="attachment-size">
-                    ${escapeHtml(
-                        formatFileSize(
-                            asset.size
-                        )
-                    )}
-                </span>
-            </span>
-        `;
+            icon.textContent =
+                "📎";
 
-        insertNodeAtSelection(
-            attachment
-        );
+            const details =
+                document.createElement(
+                    "span"
+                );
 
-        saveCurrentLetter();
+            details.className =
+                "attachment-details";
 
-        showSaveStatus(
-            "File attached"
-        );
-    } catch (error) {
-        console.error(
-            "Unable to attach file:",
-            error
-        );
+            const name =
+                document.createElement(
+                    "span"
+                );
 
-        window.alert(
-            "The document could not be attached."
-        );
-    } finally {
-        attachmentInput.value = "";
+            name.className =
+                "attachment-name";
+
+            name.textContent =
+                asset.name;
+
+            const size =
+                document.createElement(
+                    "span"
+                );
+
+            size.className =
+                "attachment-size";
+
+            size.textContent =
+                formatFileSize(
+                    asset.size
+                );
+
+            details.append(
+                name,
+                size
+            );
+
+            attachment.append(
+                icon,
+                details
+            );
+
+            insertNodeAtSelection(
+                attachment
+            );
+
+            const paragraph =
+                document.createElement(
+                    "div"
+                );
+
+            paragraph.innerHTML =
+                "<br>";
+
+            attachment.after(
+                paragraph
+            );
+
+            placeCursorInsideEnd(
+                paragraph
+            );
+
+            scheduleSave();
+        } catch (error) {
+            console.error(
+                "Unable to save attachment:",
+                error
+            );
+
+            showSaveStatus(
+                "File could not be added",
+                "error"
+            );
+        }
     }
+
+    editor.focus();
 }
 
 /* =====================================================
+   END OF SECTION 3
+   Paste Section 4 immediately below this line.
+   ===================================================== */
+   /* =====================================================
    SEARCH
    ===================================================== */
 
-function getPlainTextFromHtml(html) {
-    const temporaryElement =
+function stripHtml(html) {
+    const temporary =
         document.createElement("div");
 
-    temporaryElement.innerHTML =
-        html;
+    temporary.innerHTML = html;
 
     return (
-        temporaryElement.textContent ||
-        temporaryElement.innerText ||
+        temporary.textContent ||
+        temporary.innerText ||
         ""
-    )
-        .replace(/\u200B/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
+    );
 }
 
-function createSearchExcerpt(
+function getSearchSnippet(
     text,
     query
 ) {
+    const normalizedText =
+        text.replace(/\s+/g, " ").trim();
+
     const lowerText =
-        text.toLowerCase();
+        normalizedText.toLowerCase();
 
     const lowerQuery =
         query.toLowerCase();
 
     const matchIndex =
-        lowerText.indexOf(
-            lowerQuery
-        );
+        lowerText.indexOf(lowerQuery);
 
     if (matchIndex === -1) {
-        return text.slice(0, 145);
+        return normalizedText.slice(
+            0,
+            140
+        );
     }
 
     const start =
         Math.max(
             0,
-            matchIndex - 55
+            matchIndex - 50
         );
 
     const end =
         Math.min(
-            text.length,
+            normalizedText.length,
             matchIndex +
             query.length +
-            85
+            90
         );
 
-    let excerpt =
-        text.slice(start, end);
+    let snippet =
+        normalizedText.slice(
+            start,
+            end
+        );
 
     if (start > 0) {
-        excerpt =
-            `…${excerpt}`;
+        snippet = `…${snippet}`;
     }
 
-    if (end < text.length) {
-        excerpt =
-            `${excerpt}…`;
+    if (
+        end <
+        normalizedText.length
+    ) {
+        snippet = `${snippet}…`;
     }
 
-    return excerpt;
+    return snippet;
 }
 
-function highlightSearchText(
-    text,
-    query
-) {
-    const escapedText =
-        escapeHtml(text);
+function searchAllLetters(query) {
+    const cleanQuery =
+        query.trim();
 
-    const escapedQuery =
-        escapeHtml(query)
-            .replace(
-                /[.*+?^${}()|[\]\\]/g,
-                "\\$&"
-            );
-
-    const pattern =
-        new RegExp(
-            `(${escapedQuery})`,
-            "gi"
-        );
-
-    return escapedText.replace(
-        pattern,
-        "<mark>$1</mark>"
-    );
-}
-
-function runSearch() {
-    const query =
-        searchInput.value.trim();
-
-    if (!query) {
-        searchResults.innerHTML = `
-            <p class="search-message">
-                Type a word or phrase to begin searching.
-            </p>
-        `;
-
-        return;
+    if (!cleanQuery) {
+        return [];
     }
 
-    const matches = [];
+    const lowerQuery =
+        cleanQuery.toLowerCase();
+
+    const results = [];
 
     alphabet.forEach((letter) => {
         const html =
-            letter === currentLetter
-                ? prepareEditorHtmlForStorage()
-                : loadLetter(letter);
+            loadLetter(letter);
 
         const text =
-            getPlainTextFromHtml(html);
+            stripHtml(html);
 
         if (
             text
                 .toLowerCase()
-                .includes(
-                    query.toLowerCase()
-                )
+                .includes(lowerQuery)
         ) {
-            matches.push({
+            results.push({
                 letter,
-                text
+                snippet:
+                    getSearchSnippet(
+                        text,
+                        cleanQuery
+                    )
             });
         }
     });
 
-    if (matches.length === 0) {
-        searchResults.innerHTML = `
-            <p class="search-message">
-                No pages contain
-                “${escapeHtml(query)}”.
-            </p>
-        `;
+    return results;
+}
+
+function renderSearchResults(
+    results,
+    query
+) {
+    searchResults.innerHTML = "";
+
+    if (!query.trim()) {
+        const message =
+            document.createElement(
+                "p"
+            );
+
+        message.className =
+            "search-message";
+
+        message.textContent =
+            "Type a word or name to search the book.";
+
+        searchResults.appendChild(
+            message
+        );
 
         return;
     }
 
-    searchResults.innerHTML = "";
+    if (results.length === 0) {
+        const message =
+            document.createElement(
+                "p"
+            );
 
-    matches.forEach((match) => {
-        const resultButton =
+        message.className =
+            "search-message";
+
+        message.textContent =
+            "No matching entries were found.";
+
+        searchResults.appendChild(
+            message
+        );
+
+        return;
+    }
+
+    results.forEach((result) => {
+        const button =
             document.createElement(
                 "button"
             );
 
-        resultButton.type =
-            "button";
+        button.type = "button";
 
-        resultButton.className =
+        button.className =
             "search-result";
 
-        const excerpt =
-            createSearchExcerpt(
-                match.text,
-                query
+        const letter =
+            document.createElement(
+                "strong"
             );
 
-        resultButton.innerHTML = `
-            <span class="search-result-letter">
-                ${match.letter}
-            </span>
+        letter.className =
+            "search-result-letter";
 
-            <span class="search-result-text">
-                ${highlightSearchText(
-                    excerpt,
-                    query
-                )}
-            </span>
-        `;
+        letter.textContent =
+            result.letter;
 
-        resultButton.addEventListener(
+        const snippet =
+            document.createElement(
+                "span"
+            );
+
+        snippet.className =
+            "search-result-snippet";
+
+        snippet.textContent =
+            result.snippet;
+
+        button.append(
+            letter,
+            snippet
+        );
+
+        button.addEventListener(
             "click",
             async () => {
                 searchModal.classList.add(
@@ -1949,19 +2263,21 @@ function runSearch() {
                 );
 
                 await openLetter(
-                    match.letter
+                    result.letter
                 );
+
+                editor.focus();
             }
         );
 
         searchResults.appendChild(
-            resultButton
+            button
         );
     });
 }
 
-function openSearchWindow() {
-    saveCurrentLetter();
+function openSearchModal() {
+    hideFormattingToolbar();
 
     searchModal.classList.remove(
         "hidden"
@@ -1969,159 +2285,259 @@ function openSearchWindow() {
 
     searchInput.value = "";
 
-    searchResults.innerHTML = `
-        <p class="search-message">
-            Type a word or phrase to begin searching.
-        </p>
-    `;
+    renderSearchResults(
+        [],
+        ""
+    );
 
     window.setTimeout(() => {
         searchInput.focus();
-    }, 100);
+    }, 50);
+}
+
+function closeSearchModal() {
+    searchModal.classList.add(
+        "hidden"
+    );
+
+    searchInput.value = "";
 }
 
 /* =====================================================
-   PDF EXPORT
+   PRINTABLE BOOK
    ===================================================== */
 
-async function exportCurrentPageAsPdf() {
-    saveCurrentLetter();
-
-    hideFormattingToolbar();
-
-    if (
-        typeof window.html2pdf ===
-        "undefined"
-    ) {
-        window.alert(
-            "The PDF tool could not load. Check your internet connection and try again."
-        );
-
-        return;
-    }
-
-    showSaveStatus(
-        "Creating PDF...",
-        "saving"
-    );
-
-    const pageArea =
-        document.querySelector(
-            ".page-area"
-        );
-
-    if (!pageArea) {
-        window.alert(
-            "The page could not be found."
-        );
-
-        return;
-    }
-
-    const printableCopy =
-        pageArea.cloneNode(true);
-
-    printableCopy.classList.add(
-        "pdf-export-page"
-    );
-
-    const copiedEditor =
-        printableCopy.querySelector(
-            "#editor"
-        );
-
-    copiedEditor?.removeAttribute(
-        "contenteditable"
-    );
-
-    printableCopy.querySelectorAll(
-        'input[type="checkbox"]'
-    ).forEach((checkbox) => {
-        checkbox.disabled = true;
-    });
-
-    const wrapper =
+function buildPrintableBook() {
+    const printable =
         document.createElement(
             "div"
         );
 
-    wrapper.style.position =
-        "fixed";
+    printable.className =
+        "printable-book";
 
-    wrapper.style.left =
-        "-10000px";
+    const title =
+        document.createElement(
+            "h1"
+        );
 
-    wrapper.style.top = "0";
+    title.textContent =
+        "Grandma's Alphabet Book";
 
-    wrapper.style.background =
-        "#ffffff";
-
-    wrapper.appendChild(
-        printableCopy
+    printable.appendChild(
+        title
     );
 
-    document.body.appendChild(
-        wrapper
-    );
+    alphabet.forEach((letter) => {
+        const html =
+            loadLetter(letter);
 
-    const options = {
-        margin: 0.35,
+        const text =
+            stripHtml(html).trim();
 
-        filename:
-            `Grandmas-Book-Letter-${currentLetter}.pdf`,
-
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-
-        html2canvas: {
-            scale: 2,
-            useCORS: true,
-            backgroundColor:
-                "#fffdf4"
-        },
-
-        jsPDF: {
-            unit: "in",
-            format: "letter",
-            orientation: "portrait"
-        },
-
-        pagebreak: {
-            mode: [
-                "css",
-                "legacy"
-            ]
+        if (
+            text === "" &&
+            !html.includes(
+                "data-asset-id"
+            )
+        ) {
+            return;
         }
-    };
 
-    try {
-        await window
-            .html2pdf()
-            .set(options)
-            .from(printableCopy)
-            .save();
+        const section =
+            document.createElement(
+                "section"
+            );
 
+        section.className =
+            "print-letter-section";
+
+        const heading =
+            document.createElement(
+                "h2"
+            );
+
+        heading.textContent =
+            letter;
+
+        const content =
+            document.createElement(
+                "div"
+            );
+
+        content.className =
+            "print-letter-content";
+
+        content.innerHTML =
+            html;
+
+        content
+            .querySelectorAll(
+                "img[data-asset-id]"
+            )
+            .forEach((image) => {
+                const original =
+                    editor.querySelector(
+                        `img[data-asset-id="${image.dataset.assetId}"]`
+                    );
+
+                if (original?.src) {
+                    image.src =
+                        original.src;
+                }
+            });
+
+        content
+            .querySelectorAll(
+                ".attachment-card"
+            )
+            .forEach(
+                (attachment) => {
+                    attachment.removeAttribute(
+                        "href"
+                    );
+                }
+            );
+
+        section.append(
+            heading,
+            content
+        );
+
+        printable.appendChild(
+            section
+        );
+    });
+
+    return printable;
+}
+
+function exportBookAsPdf() {
+    saveCurrentLetter();
+
+    hideFormattingToolbar();
+
+    const printable =
+        buildPrintableBook();
+
+    const printWindow =
+        window.open(
+            "",
+            "_blank"
+        );
+
+    if (!printWindow) {
         showSaveStatus(
-            "PDF created"
-        );
-    } catch (error) {
-        console.error(
-            "Unable to create PDF:",
-            error
+            "Please allow pop-ups",
+            "error"
         );
 
-        window.alert(
-            "The PDF could not be created."
-        );
-    } finally {
-        wrapper.remove();
+        return;
     }
+
+    printWindow.document.open();
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1.0"
+            >
+            <title>
+                Grandma's Alphabet Book
+            </title>
+            <style>
+                body {
+                    font-family:
+                        Georgia,
+                        "Times New Roman",
+                        serif;
+                    margin: 32px;
+                    color: #222;
+                    line-height: 1.5;
+                }
+
+                h1 {
+                    text-align: center;
+                    margin-bottom: 36px;
+                }
+
+                h2 {
+                    font-size: 28px;
+                    border-bottom:
+                        2px solid #999;
+                    padding-bottom: 6px;
+                }
+
+                .print-letter-section {
+                    break-after: page;
+                    page-break-after: always;
+                }
+
+                .print-letter-section:last-child {
+                    break-after: auto;
+                    page-break-after: auto;
+                }
+
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    display: block;
+                    margin:
+                        14px auto;
+                }
+
+                .attachment-card {
+                    display: block;
+                    margin:
+                        8px 0;
+                }
+
+                .yellow-highlight {
+                    background: #fff59d;
+                }
+
+                .checklist-item {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 8px;
+                    margin: 5px 0;
+                }
+
+                .checklist-item.completed
+                .checklist-text {
+                    text-decoration:
+                        line-through;
+                    opacity: 0.65;
+                }
+
+                @media print {
+                    body {
+                        margin: 0.5in;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            ${printable.innerHTML}
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.focus();
+
+    window.setTimeout(() => {
+        printWindow.print();
+    }, 400);
 }
 
 /* =====================================================
-   BACKUP HELPERS
+   BACKUP DATA HELPERS
    ===================================================== */
 
 function blobToDataUrl(blob) {
@@ -2144,7 +2560,9 @@ function blobToDataUrl(blob) {
                     );
                 };
 
-            reader.readAsDataURL(blob);
+            reader.readAsDataURL(
+                blob
+            );
         }
     );
 }
@@ -2152,12 +2570,6 @@ function blobToDataUrl(blob) {
 function dataUrlToBlob(dataUrl) {
     const parts =
         dataUrl.split(",");
-
-    if (parts.length !== 2) {
-        throw new Error(
-            "Invalid backup file data."
-        );
-    }
 
     const metadata =
         parts[0];
@@ -2200,6 +2612,60 @@ function dataUrlToBlob(dataUrl) {
     );
 }
 
+/* =====================================================
+   CREATE BACKUP
+   ===================================================== */
+
+async function createBackupData() {
+    saveCurrentLetter();
+
+    const pages = {};
+
+    alphabet.forEach((letter) => {
+        pages[letter] =
+            loadLetter(letter);
+    });
+
+    const storedAssets =
+        await getAllAssets();
+
+    const assets = [];
+
+    for (
+        const asset
+        of storedAssets
+    ) {
+        const dataUrl =
+            await blobToDataUrl(
+                asset.blob
+            );
+
+        assets.push({
+            id: asset.id,
+            name: asset.name,
+            type: asset.type,
+            size: asset.size,
+            kind: asset.kind,
+            createdAt:
+                asset.createdAt,
+            dataUrl
+        });
+    }
+
+    return {
+        app:
+            "Grandma's Alphabet Book",
+        version: "2.6.0",
+        createdAt:
+            new Date()
+                .toISOString(),
+        lastLetter:
+            currentLetter,
+        pages,
+        assets
+    };
+}
+
 function downloadJsonFile(
     data,
     filename
@@ -2221,85 +2687,42 @@ function downloadJsonFile(
         );
 
     const url =
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+            blob
+        );
 
     const link =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
     link.href = url;
     link.download = filename;
 
-    document.body.appendChild(link);
+    document.body.appendChild(
+        link
+    );
 
     link.click();
 
     link.remove();
 
     window.setTimeout(() => {
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(
+            url
+        );
     }, 1000);
 }
 
-/* =====================================================
-   DOWNLOAD BACKUP
-   ===================================================== */
-
 async function downloadBackup() {
-    saveCurrentLetter();
-
-    showSaveStatus(
-        "Creating backup...",
-        "saving"
-    );
-
     try {
-        const pages = {};
+        showSaveStatus(
+            "Preparing backup...",
+            "saving"
+        );
 
-        alphabet.forEach((letter) => {
-            pages[letter] =
-                loadLetter(letter);
-        });
-
-        const storedAssets =
-            await getAllAssets();
-
-        const backupAssets = [];
-
-        for (
-            const asset
-            of storedAssets
-        ) {
-            const dataUrl =
-                await blobToDataUrl(
-                    asset.blob
-                );
-
-            backupAssets.push({
-                id: asset.id,
-                type: asset.type,
-                name: asset.name,
-                mimeType:
-                    asset.mimeType,
-                size: asset.size,
-                created:
-                    asset.created,
-                dataUrl
-            });
-        }
-
-        const backup = {
-            application:
-                "Grandma's Alphabet Book",
-
-            version: "2.5.1",
-
-            created:
-                new Date().toISOString(),
-
-            pages,
-
-            assets: backupAssets
-        };
+        const backup =
+            await createBackupData();
 
         const date =
             new Date()
@@ -2308,15 +2731,15 @@ async function downloadBackup() {
 
         downloadJsonFile(
             backup,
-            `Grandmas-Alphabet-Book-Backup-${date}.json`
-        );
-
-        showSaveStatus(
-            "Backup downloaded"
+            `grandmas-alphabet-book-backup-${date}.json`
         );
 
         backupModal.classList.add(
             "hidden"
+        );
+
+        showSaveStatus(
+            "Backup downloaded"
         );
     } catch (error) {
         console.error(
@@ -2324,8 +2747,9 @@ async function downloadBackup() {
             error
         );
 
-        window.alert(
-            "The backup could not be created."
+        showSaveStatus(
+            "Backup failed",
+            "error"
         );
     }
 }
@@ -2334,7 +2758,9 @@ async function downloadBackup() {
    RESTORE BACKUP
    ===================================================== */
 
-function validateBackup(backup) {
+function validateBackupData(
+    backup
+) {
     return Boolean(
         backup &&
         typeof backup ===
@@ -2348,83 +2774,147 @@ function validateBackup(backup) {
     );
 }
 
-async function readBackupFile(file) {
-    const text =
-        await file.text();
+async function handleRestoreFile(
+    event
+) {
+    const file =
+        event.target.files?.[0];
 
-    const backup =
-        JSON.parse(text);
+    event.target.value = "";
 
-    if (!validateBackup(backup)) {
-        throw new Error(
-            "This is not a valid Grandma's Alphabet Book backup."
-        );
+    if (!file) {
+        return;
     }
 
-    return backup;
+    try {
+        const text =
+            await file.text();
+
+        const backup =
+            JSON.parse(text);
+
+        if (
+            !validateBackupData(
+                backup
+            )
+        ) {
+            throw new Error(
+                "Invalid backup file"
+            );
+        }
+
+        pendingBackup =
+            backup;
+
+        backupModal.classList.add(
+            "hidden"
+        );
+
+        confirmModal.classList.remove(
+            "hidden"
+        );
+    } catch (error) {
+        console.error(
+            "Unable to read backup:",
+            error
+        );
+
+        showSaveStatus(
+            "That backup file is not valid",
+            "error"
+        );
+    }
 }
 
-async function restoreBackup(backup) {
+async function restoreBackupData() {
+    if (!pendingBackup) {
+        return;
+    }
+
     try {
         showSaveStatus(
             "Restoring...",
             "saving"
         );
 
-        releaseObjectUrls();
+        alphabet.forEach(
+            (letter) => {
+                const html =
+                    pendingBackup
+                        .pages[
+                            letter
+                        ] || "";
 
-        alphabet.forEach((letter) => {
-            const page =
-                backup.pages[letter];
-
-            localStorage.setItem(
-                getStorageKey(letter),
-                typeof page === "string"
-                    ? page
-                    : ""
-            );
-        });
+                localStorage.setItem(
+                    getStorageKey(
+                        letter
+                    ),
+                    html
+                );
+            }
+        );
 
         await clearAllAssets();
 
         for (
-            const storedAsset
-            of backup.assets
+            const asset
+            of pendingBackup.assets
         ) {
             const blob =
                 dataUrlToBlob(
-                    storedAsset.dataUrl
+                    asset.dataUrl
                 );
 
             await saveAsset({
-                id:
-                    storedAsset.id,
-                type:
-                    storedAsset.type,
+                id: asset.id,
                 name:
-                    storedAsset.name,
-                mimeType:
-                    storedAsset.mimeType,
+                    asset.name ||
+                    "File",
+                type:
+                    asset.type ||
+                    blob.type,
                 size:
-                    storedAsset.size,
-                created:
-                    storedAsset.created,
+                    asset.size ||
+                    blob.size,
+                kind:
+                    asset.kind ||
+                    "attachment",
+                createdAt:
+                    asset.createdAt ||
+                    new Date()
+                        .toISOString(),
                 blob
             });
         }
 
+        const restoredLetter =
+            alphabet.includes(
+                pendingBackup
+                    .lastLetter
+            )
+                ? pendingBackup
+                      .lastLetter
+                : "A";
+
+        localStorage.setItem(
+            LAST_LETTER_KEY,
+            restoredLetter
+        );
+
+        releaseObjectUrls();
+
         pendingBackup = null;
 
-        closeAllModals();
+        confirmModal.classList.add(
+            "hidden"
+        );
 
-        await displayLetter("A");
+        await displayLetter(
+            restoredLetter
+        );
 
         showSaveStatus(
             "Backup restored"
-        );
-
-        window.alert(
-            "Your backup was restored successfully."
         );
     } catch (error) {
         console.error(
@@ -2432,657 +2922,851 @@ async function restoreBackup(backup) {
             error
         );
 
-        window.alert(
-            "The backup could not be restored."
+        showSaveStatus(
+            "Restore failed",
+            "error"
         );
     }
 }
 
 /* =====================================================
-   BOOK EVENTS
+   BACKUP WINDOW
    ===================================================== */
 
-openBookButton.addEventListener(
-    "click",
-    openBook
-);
+function openBackupModal() {
+    hideFormattingToolbar();
 
-editor.addEventListener(
-    "input",
-    () => {
-        scheduleSave();
-        updateToolbarState();
-    }
-);
+    backupModal.classList.remove(
+        "hidden"
+    );
+}
 
-editor.addEventListener(
-    "mouseup",
-    () => {
-        window.setTimeout(
-            showFormattingToolbar,
-            0
-        );
-    }
-);
-
-editor.addEventListener(
-    "keyup",
-    () => {
-        window.setTimeout(
-            showFormattingToolbar,
-            0
-        );
-    }
-);
-
-editor.addEventListener(
-    "touchend",
-    () => {
-        window.setTimeout(
-            showFormattingToolbar,
-            80
-        );
-    }
-);
-
-editor.addEventListener(
-    "focus",
-    () => {
-        window.setTimeout(
-            showFormattingToolbar,
-            0
-        );
-    }
-);
-
-editor.addEventListener(
-    "change",
-    (event) => {
-        const target =
-            event.target;
-
-        if (
-            target.matches(
-                '.checklist-item input[type="checkbox"]'
-            )
-        ) {
-            updateChecklistItem(
-                target
-            );
-        }
-    }
-);
+function closeBackupModal() {
+    backupModal.classList.add(
+        "hidden"
+    );
+}
 
 /* =====================================================
-   TOOLBAR EVENTS
+   END OF SECTION 4
+   Paste Section 5 immediately below this line.
+   ===================================================== */
+   /* =====================================================
+   EDITOR INPUT BEHAVIOR
    ===================================================== */
 
-undoButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
+function handleEditorInput() {
+    scheduleSave();
+}
 
-        runEditorCommand("undo");
+function handleEditorChange(event) {
+    const target =
+        event.target;
+
+    if (
+        target.matches(
+            'input[type="checkbox"]'
+        )
+    ) {
+        updateChecklistItem(
+            target
+        );
     }
-);
+}
 
-redoButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
+function handleEditorClick(event) {
+    const attachment =
+        event.target.closest(
+            ".attachment-card"
+        );
 
-        runEditorCommand("redo");
+    if (attachment) {
+        return;
     }
-);
 
-boldButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
+    const checklistText =
+        event.target.closest(
+            ".checklist-text"
+        );
 
-        runEditorCommand("bold");
+    if (checklistText) {
+        checklistText.focus();
     }
-);
+}
 
-italicButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
-
-        runEditorCommand("italic");
-    }
-);
-
-sizeButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
-
-        saveSelection();
-
-        toggleSizeMenu();
-    }
-);
-
-colorButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
-
-        saveSelection();
-
-        toggleColorMenu();
-    }
-);
-
-highlightButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
-
-        highlightSelection();
-    }
-);
-
-checklistButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
-
-        insertChecklist();
-    }
-);
-
-photoButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
-
-        saveSelection();
-
+function handleEditorKeydown(event) {
+    if (
+        event.key === "Escape"
+    ) {
         hideFormattingToolbar();
 
-        photoInput.click();
+        return;
     }
-);
 
-attachmentButton.addEventListener(
-    "mousedown",
-    (event) => {
-        event.preventDefault();
-
-        saveSelection();
-
-        hideFormattingToolbar();
-
-        attachmentInput.click();
+    if (
+        event.key !== "Enter"
+    ) {
+        return;
     }
-);
+
+    const checklistText =
+        event.target.closest(
+            ".checklist-text"
+        );
+
+    if (!checklistText) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const currentItem =
+        checklistText.closest(
+            ".checklist-item"
+        );
+
+    if (!currentItem) {
+        return;
+    }
+
+    const newItem =
+        createChecklistItem();
+
+    currentItem.after(
+        newItem
+    );
+
+    const newText =
+        newItem.querySelector(
+            ".checklist-text"
+        );
+
+    newText.focus();
+
+    placeCursorInsideEnd(
+        newText
+    );
+
+    scheduleSave();
+}
+
+function handleEditorPaste(event) {
+    const clipboard =
+        event.clipboardData;
+
+    if (!clipboard) {
+        return;
+    }
+
+    const plainText =
+        clipboard.getData(
+            "text/plain"
+        );
+
+    if (!plainText) {
+        return;
+    }
+
+    event.preventDefault();
+
+    document.execCommand(
+        "insertText",
+        false,
+        plainText
+    );
+
+    scheduleSave();
+}
 
 /* =====================================================
-   SIZE OPTIONS
+   SELECTION EVENTS
    ===================================================== */
 
-document.querySelectorAll(
-    ".size-option"
-).forEach((option) => {
-    option.addEventListener(
-        "mousedown",
-        (event) => {
-            event.preventDefault();
+function handleSelectionChange() {
+    if (
+        selectionContainsWords()
+    ) {
+        showFormattingToolbar();
+    } else if (
+        !formatToolbar?.contains(
+            document.activeElement
+        ) &&
+        !sizeMenu?.contains(
+            document.activeElement
+        ) &&
+        !colorMenu?.contains(
+            document.activeElement
+        )
+    ) {
+        hideFormattingToolbar();
+    }
+}
 
-            const size =
-                option.dataset.size;
+function handleDocumentPointerDown(
+    event
+) {
+    const clickedToolbar =
+        formatToolbar?.contains(
+            event.target
+        );
 
-            const sizeValues = {
-                small: "2",
-                normal: "3",
-                large: "5"
-            };
+    const clickedSizeMenu =
+        sizeMenu?.contains(
+            event.target
+        );
 
+    const clickedColorMenu =
+        colorMenu?.contains(
+            event.target
+        );
+
+    if (
+        clickedToolbar ||
+        clickedSizeMenu ||
+        clickedColorMenu
+    ) {
+        return;
+    }
+
+    if (
+        !editor.contains(
+            event.target
+        )
+    ) {
+        hideFormattingToolbar();
+    }
+}
+
+/* =====================================================
+   TOOLBAR BUTTON EVENTS
+   ===================================================== */
+
+function connectToolbarButtons() {
+    undoButton?.addEventListener(
+        "click",
+        () => {
             runEditorCommand(
-                "fontSize",
-                sizeValues[size] ||
-                "3"
-            );
-
-            sizeMenu.classList.add(
-                "hidden"
+                "undo"
             );
         }
     );
-});
 
-/* =====================================================
-   COLOR OPTIONS
-   ===================================================== */
-
-document.querySelectorAll(
-    ".color-option"
-).forEach((option) => {
-    option.addEventListener(
-        "mousedown",
-        (event) => {
-            event.preventDefault();
-
-            const color =
-                option.dataset.color;
-
+    redoButton?.addEventListener(
+        "click",
+        () => {
             runEditorCommand(
-                "foreColor",
-                color
-            );
-
-            colorMenu.classList.add(
-                "hidden"
+                "redo"
             );
         }
     );
-});
+
+    boldButton?.addEventListener(
+        "click",
+        () => {
+            runEditorCommand(
+                "bold"
+            );
+        }
+    );
+
+    italicButton?.addEventListener(
+        "click",
+        () => {
+            runEditorCommand(
+                "italic"
+            );
+        }
+    );
+
+    sizeButton?.addEventListener(
+        "click",
+        (event) => {
+            event.stopPropagation();
+
+            toggleSizeMenu();
+        }
+    );
+
+    colorButton?.addEventListener(
+        "click",
+        (event) => {
+            event.stopPropagation();
+
+            toggleColorMenu();
+        }
+    );
+
+    highlightButton?.addEventListener(
+        "click",
+        () => {
+            applyHighlight();
+        }
+    );
+
+    checklistButton?.addEventListener(
+        "click",
+        () => {
+            insertChecklist();
+        }
+    );
+
+    photoButton?.addEventListener(
+        "click",
+        () => {
+            hideFormattingToolbar();
+
+            photoInput?.click();
+        }
+    );
+
+    attachmentButton?.addEventListener(
+        "click",
+        () => {
+            hideFormattingToolbar();
+
+            attachmentInput?.click();
+        }
+    );
+
+    closeToolbarButton?.addEventListener(
+        "click",
+        () => {
+            hideFormattingToolbar();
+
+            clearBrowserSelection();
+
+            editor.focus();
+        }
+    );
+}
 
 /* =====================================================
-   FILE EVENTS
+   SIZE MENU EVENTS
    ===================================================== */
 
-photoInput.addEventListener(
-    "change",
-    () => {
-        const file =
-            photoInput.files?.[0];
-
-        insertPhoto(file);
+function connectSizeMenu() {
+    if (!sizeMenu) {
+        return;
     }
-);
 
-attachmentInput.addEventListener(
-    "change",
-    () => {
-        const file =
-            attachmentInput.files?.[0];
+    const buttons =
+        sizeMenu.querySelectorAll(
+            "[data-font-size]"
+        );
 
-        insertAttachment(file);
+    buttons.forEach(
+        (button) => {
+            button.addEventListener(
+                "click",
+                () => {
+                    applyFontSize(
+                        button.dataset
+                            .fontSize
+                    );
+                }
+            );
+        }
+    );
+}
+
+/* =====================================================
+   COLOR MENU EVENTS
+   ===================================================== */
+
+function connectColorMenu() {
+    if (!colorMenu) {
+        return;
     }
-);
+
+    const buttons =
+        colorMenu.querySelectorAll(
+            "[data-text-color]"
+        );
+
+    buttons.forEach(
+        (button) => {
+            button.addEventListener(
+                "click",
+                () => {
+                    applyTextColor(
+                        button.dataset
+                            .textColor
+                    );
+                }
+            );
+        }
+    );
+}
 
 /* =====================================================
    SEARCH EVENTS
    ===================================================== */
 
-searchButton.addEventListener(
-    "click",
-    openSearchWindow
-);
+function connectSearchEvents() {
+    searchButton?.addEventListener(
+        "click",
+        openSearchModal
+    );
 
-closeSearchButton.addEventListener(
-    "click",
-    () => {
-        searchModal.classList.add(
-            "hidden"
-        );
-    }
-);
+    closeSearchButton?.addEventListener(
+        "click",
+        closeSearchModal
+    );
 
-searchInput.addEventListener(
-    "input",
-    runSearch
-);
+    searchInput?.addEventListener(
+        "input",
+        () => {
+            const query =
+                searchInput.value;
 
-/* =====================================================
-   PDF EVENT
-   ===================================================== */
+            const results =
+                searchAllLetters(
+                    query
+                );
 
-exportPdfButton.addEventListener(
-    "click",
-    exportCurrentPageAsPdf
-);
+            renderSearchResults(
+                results,
+                query
+            );
+        }
+    );
+
+    searchModal?.addEventListener(
+        "click",
+        (event) => {
+            if (
+                event.target ===
+                searchModal
+            ) {
+                closeSearchModal();
+            }
+        }
+    );
+}
 
 /* =====================================================
    BACKUP EVENTS
    ===================================================== */
 
-backupButton.addEventListener(
-    "click",
-    () => {
-        backupModal.classList.remove(
-            "hidden"
-        );
-    }
-);
+function connectBackupEvents() {
+    backupButton?.addEventListener(
+        "click",
+        openBackupModal
+    );
 
-closeBackupButton.addEventListener(
-    "click",
-    () => {
-        backupModal.classList.add(
-            "hidden"
-        );
-    }
-);
+    closeBackupButton?.addEventListener(
+        "click",
+        closeBackupModal
+    );
 
-downloadBackupButton.addEventListener(
-    "click",
-    downloadBackup
-);
+    downloadBackupButton?.addEventListener(
+        "click",
+        downloadBackup
+    );
 
-restoreBackupButton.addEventListener(
-    "click",
-    () => {
-        restoreInput.click();
-    }
-);
-
-restoreInput.addEventListener(
-    "change",
-    async () => {
-        const file =
-            restoreInput.files?.[0];
-
-        restoreInput.value = "";
-
-        if (!file) {
-            return;
+    restoreBackupButton?.addEventListener(
+        "click",
+        () => {
+            restoreInput?.click();
         }
+    );
 
-        try {
-            pendingBackup =
-                await readBackupFile(
-                    file
-                );
+    confirmCancelButton?.addEventListener(
+        "click",
+        () => {
+            pendingBackup = null;
 
-            backupModal.classList.add(
+            confirmModal.classList.add(
                 "hidden"
             );
-
-            confirmModal.classList.remove(
-                "hidden"
-            );
-        } catch (error) {
-            console.error(
-                "Invalid backup:",
-                error
-            );
-
-            window.alert(
-                "That file is not a valid Grandma's Alphabet Book backup."
-            );
         }
-    }
-);
+    );
 
-confirmCancelButton.addEventListener(
-    "click",
-    () => {
-        pendingBackup = null;
+    confirmRestoreButton?.addEventListener(
+        "click",
+        restoreBackupData
+    );
 
-        confirmModal.classList.add(
-            "hidden"
-        );
-    }
-);
-
-confirmRestoreButton.addEventListener(
-    "click",
-    () => {
-        if (pendingBackup) {
-            restoreBackup(
-                pendingBackup
-            );
-        }
-    }
-);
-
-/* =====================================================
-   MODAL BACKGROUND EVENTS
-   ===================================================== */
-
-[
-    searchModal,
-    backupModal,
-    confirmModal
-].forEach((modal) => {
-    modal.addEventListener(
+    backupModal?.addEventListener(
         "click",
         (event) => {
             if (
-                event.target === modal
+                event.target ===
+                backupModal
             ) {
-                modal.classList.add(
+                closeBackupModal();
+            }
+        }
+    );
+
+    confirmModal?.addEventListener(
+        "click",
+        (event) => {
+            if (
+                event.target ===
+                confirmModal
+            ) {
+                pendingBackup = null;
+
+                confirmModal.classList.add(
                     "hidden"
                 );
             }
         }
     );
-});
+}
 
 /* =====================================================
-   DOCUMENT EVENTS
+   GLOBAL EVENTS
    ===================================================== */
 
-document.addEventListener(
-    "selectionchange",
-    () => {
-        if (
-            document.activeElement ===
-                editor &&
-            selectionIsInsideEditor()
-        ) {
-            saveSelection();
+function connectGlobalEvents() {
+    openBookButton?.addEventListener(
+        "click",
+        openBook
+    );
 
-            updateToolbarState();
-        }
-    }
-);
+    exportPdfButton?.addEventListener(
+        "click",
+        exportBookAsPdf
+    );
 
-document.addEventListener(
-    "mousedown",
-    (event) => {
-        const clickedInsideToolbar =
-            formatToolbar.contains(
-                event.target
-            );
+    photoInput?.addEventListener(
+        "change",
+        handlePhotoSelection
+    );
 
-        const clickedInsideMenu =
-            sizeMenu.contains(
-                event.target
-            ) ||
-            colorMenu.contains(
-                event.target
-            );
+    attachmentInput?.addEventListener(
+        "change",
+        handleAttachmentSelection
+    );
 
-        const clickedInsideEditor =
-            editor.contains(
-                event.target
-            ) ||
-            event.target === editor;
+    restoreInput?.addEventListener(
+        "change",
+        handleRestoreFile
+    );
 
-        if (
-            !clickedInsideToolbar &&
-            !clickedInsideMenu &&
-            !clickedInsideEditor
-        ) {
-            hideFormattingToolbar();
-        }
+    editor?.addEventListener(
+        "input",
+        handleEditorInput
+    );
 
-        if (
-            !clickedInsideMenu &&
-            event.target !==
-                sizeButton &&
-            event.target !==
-                colorButton
-        ) {
-            closeAllFormattingMenus();
-        }
-    }
-);
+    editor?.addEventListener(
+        "change",
+        handleEditorChange
+    );
 
-document.addEventListener(
-    "keydown",
-    (event) => {
-        if (event.key === "Escape") {
-            closeAllFormattingMenus();
+    editor?.addEventListener(
+        "click",
+        handleEditorClick
+    );
 
-            if (
-                !searchModal.classList.contains(
-                    "hidden"
-                )
-            ) {
-                searchModal.classList.add(
-                    "hidden"
-                );
+    editor?.addEventListener(
+        "keydown",
+        handleEditorKeydown
+    );
 
-                return;
-            }
+    editor?.addEventListener(
+        "paste",
+        handleEditorPaste
+    );
 
-            if (
-                !backupModal.classList.contains(
-                    "hidden"
-                )
-            ) {
-                backupModal.classList.add(
-                    "hidden"
-                );
+    document.addEventListener(
+        "selectionchange",
+        handleSelectionChange
+    );
 
-                return;
-            }
+    document.addEventListener(
+        "pointerdown",
+        handleDocumentPointerDown
+    );
 
-            if (
-                !confirmModal.classList.contains(
-                    "hidden"
-                )
-            ) {
-                confirmModal.classList.add(
-                    "hidden"
-                );
+    window.addEventListener(
+        "resize",
+        positionFormattingToolbar
+    );
 
-                pendingBackup = null;
-
-                return;
-            }
-
-            hideFormattingToolbar();
-        }
-    }
-);
-
-/* =====================================================
-   WINDOW EVENTS
-   ===================================================== */
-
-window.addEventListener(
-    "resize",
-    () => {
-        positionFormattingToolbar();
-        closeAllFormattingMenus();
-    }
-);
-
-window.addEventListener(
-    "scroll",
-    () => {
-        positionFormattingToolbar();
-        closeAllFormattingMenus();
-    },
-    true
-);
-
-window.addEventListener(
-    "beforeunload",
-    () => {
-        saveCurrentLetter();
-        releaseObjectUrls();
-    }
-);
-
-document.addEventListener(
-    "visibilitychange",
-    () => {
-        if (document.hidden) {
+    window.addEventListener(
+        "beforeunload",
+        () => {
             saveCurrentLetter();
+
+            releaseObjectUrls();
         }
-    }
-);
+    );
+
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (
+                event.key ===
+                "Escape"
+            ) {
+                closeAllModals();
+
+                hideFormattingToolbar();
+            }
+        }
+    );
+}
 
 /* =====================================================
-   PLAIN-TEXT PASTING
+   END OF SECTION 5
+   Paste Section 6 immediately below this line.
+   ===================================================== */
+   /* =====================================================
+   CLEAN SAVED CONTENT
    ===================================================== */
 
-editor.addEventListener(
-    "paste",
-    (event) => {
-        const clipboardData =
-            event.clipboardData;
+function cleanEditorContent() {
+    editor
+        ?.querySelectorAll(
+            ".checklist-item"
+        )
+        .forEach((item) => {
+            const checkbox =
+                item.querySelector(
+                    'input[type="checkbox"]'
+                );
 
-        if (!clipboardData) {
-            return;
-        }
+            item.classList.toggle(
+                "completed",
+                Boolean(
+                    checkbox?.checked
+                )
+            );
+        });
 
-        event.preventDefault();
-
-        const text =
-            clipboardData.getData(
-                "text/plain"
+    editor
+        ?.querySelectorAll(
+            ".highlight-cursor-marker"
+        )
+        .forEach((marker) => {
+            marker.classList.remove(
+                "highlight-cursor-marker"
             );
 
-        document.execCommand(
-            "insertText",
-            false,
-            text
+            marker.innerHTML =
+                marker.innerHTML.replace(
+                    /\u200B/g,
+                    ""
+                );
+        });
+}
+
+/* =====================================================
+   PREVENT TOOLBAR BUTTONS FROM
+   DESTROYING THE TEXT SELECTION
+   ===================================================== */
+
+function preserveSelectionOnToolbarPress() {
+    const controls = [
+        formatToolbar,
+        sizeMenu,
+        colorMenu
+    ];
+
+    controls.forEach(
+        (control) => {
+            control?.addEventListener(
+                "pointerdown",
+                (event) => {
+                    const button =
+                        event.target.closest(
+                            "button"
+                        );
+
+                    if (!button) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    restoreSelection();
+                }
+            );
+        }
+    );
+}
+
+/* =====================================================
+   ACCESSIBILITY HELPERS
+   ===================================================== */
+
+function prepareAccessibility() {
+    editor?.setAttribute(
+        "role",
+        "textbox"
+    );
+
+    editor?.setAttribute(
+        "aria-multiline",
+        "true"
+    );
+
+    editor?.setAttribute(
+        "aria-label",
+        "Alphabet book page"
+    );
+
+    formatToolbar?.setAttribute(
+        "role",
+        "toolbar"
+    );
+
+    formatToolbar?.setAttribute(
+        "aria-label",
+        "Text formatting"
+    );
+
+    sizeMenu?.setAttribute(
+        "role",
+        "menu"
+    );
+
+    colorMenu?.setAttribute(
+        "role",
+        "menu"
+    );
+}
+
+/* =====================================================
+   VERIFY REQUIRED HTML ELEMENTS
+   ===================================================== */
+
+function verifyRequiredElements() {
+    const requiredElements = [
+        ["cover-screen", coverScreen],
+        ["book-screen", bookScreen],
+        ["open-book", openBookButton],
+        ["letter-tabs", letterTabs],
+        [
+            "current-letter",
+            currentLetterHeading
+        ],
+        ["editor", editor]
+    ];
+
+    const missing =
+        requiredElements
+            .filter(
+                ([, element]) =>
+                    !element
+            )
+            .map(
+                ([name]) => name
+            );
+
+    if (missing.length > 0) {
+        console.error(
+            "Grandma's Alphabet Book is missing these HTML elements:",
+            missing.join(", ")
         );
 
-        scheduleSave();
+        return false;
     }
-);
+
+    return true;
+}
 
 /* =====================================================
    SERVICE WORKER
    ===================================================== */
 
-if (
-    "serviceWorker" in navigator
-) {
+function registerServiceWorker() {
+    if (
+        !(
+            "serviceWorker"
+            in navigator
+        )
+    ) {
+        return;
+    }
+
     window.addEventListener(
         "load",
         () => {
-            navigator.serviceWorker
+            navigator
+                .serviceWorker
                 .register(
                     "./service-worker.js"
                 )
-                .catch((error) => {
-                    console.error(
-                        "Service worker registration failed:",
-                        error
-                    );
-                });
+                .then(
+                    (registration) => {
+                        console.log(
+                            "Service worker registered:",
+                            registration.scope
+                        );
+                    }
+                )
+                .catch(
+                    (error) => {
+                        console.warn(
+                            "Service worker registration failed:",
+                            error
+                        );
+                    }
+                );
         }
     );
 }
 
 /* =====================================================
-   START THE APP
+   APPLICATION STARTUP
    ===================================================== */
 
-async function startApp() {
+function initializeApp() {
+    if (
+        !verifyRequiredElements()
+    ) {
+        return;
+    }
+
     createLetterTabs();
 
-    currentLetter = "A";
+    prepareAccessibility();
 
-    currentLetterHeading.textContent =
-        "A";
+    connectToolbarButtons();
 
-    editor.innerHTML =
-        loadLetter("A");
+    connectSizeMenu();
 
-    updateActiveTab();
+    connectColorMenu();
 
-    try {
-        await openDatabase();
+    connectSearchEvents();
 
-        await hydrateEditorAssets();
-    } catch (error) {
-        console.error(
-            "File storage is unavailable:",
-            error
-        );
-    }
+    connectBackupEvents();
+
+    connectGlobalEvents();
+
+    preserveSelectionOnToolbarPress();
+
+    cleanEditorContent();
+
+    registerServiceWorker();
+
+    console.log(
+        "Grandma's Alphabet Book Version 2.6.0 is ready."
+    );
 }
 
-startApp();
+/* =====================================================
+   START AFTER THE PAGE LOADS
+   ===================================================== */
+
+if (
+    document.readyState ===
+    "loading"
+) {
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeApp
+    );
+} else {
+    initializeApp();
+}
+
+/* =====================================================
+   GRANDMA'S ALPHABET BOOK
+   VERSION 2.6.0
+   END OF FILE
+   ===================================================== */
