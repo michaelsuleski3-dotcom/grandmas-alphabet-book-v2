@@ -1274,12 +1274,6 @@ function highlightSelection() {
             "Select the words you want to highlight first."
         );
 
-        highlighterActive = false;
-
-        highlightButton.classList.remove(
-            "active"
-        );
-
         return;
     }
 
@@ -1315,155 +1309,53 @@ function highlightSelection() {
     }
 
     /*
-    Immediately turn the highlighter off so
-    newly typed text is not highlighted.
+    Move the cursor to the end of the
+    highlighted words.
     */
 
-    highlighterActive = false;
+    const endingRange =
+        selection.getRangeAt(0)
+            .cloneRange();
+
+    endingRange.collapse(false);
+
+    selection.removeAllRanges();
+    selection.addRange(endingRange);
+
+    /*
+    Turn off the yellow background for
+    anything typed after the selection.
+    */
+
+    try {
+        document.execCommand(
+            "hiliteColor",
+            false,
+            "transparent"
+        );
+
+        document.execCommand(
+            "backColor",
+            false,
+            "transparent"
+        );
+    } catch (error) {
+        console.error(
+            "Unable to reset highlighter:",
+            error
+        );
+    }
+
+    savedSelection =
+        endingRange.cloneRange();
 
     highlightButton.classList.remove(
         "active"
     );
 
-    savedSelection = null;
-
-    editor.focus();
-
     scheduleSave();
 }
-/* =====================================================
-   INSERTING CONTENT AT THE CURSOR
-   ===================================================== */
 
-function insertNodeAtSelection(node) {
-    restoreSelection();
-
-    editor.focus();
-
-    const selection =
-        window.getSelection();
-
-    if (
-        !selection ||
-        selection.rangeCount === 0
-    ) {
-        editor.appendChild(node);
-        editor.appendChild(
-            document.createElement(
-                "br"
-            )
-        );
-
-        return;
-    }
-
-    const range =
-        selection.getRangeAt(0);
-
-    range.deleteContents();
-
-    range.insertNode(node);
-
-    const spacer =
-        document.createElement("div");
-
-    spacer.innerHTML = "<br>";
-
-    node.after(spacer);
-
-    range.setStartAfter(spacer);
-
-    range.collapse(true);
-
-    selection.removeAllRanges();
-
-    selection.addRange(range);
-
-    saveSelection();
-}
-
-/* =====================================================
-   PHOTOS
-   ===================================================== */
-
-async function insertPhoto(file) {
-    if (!file) {
-        return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-        window.alert(
-            "Please select an image file."
-        );
-
-        return;
-    }
-
-    const assetId =
-        createUniqueId("photo");
-
-    const asset = {
-        id: assetId,
-        type: "photo",
-        name:
-            file.name ||
-            "Photograph",
-        mimeType:
-            file.type ||
-            "image/jpeg",
-        size: file.size,
-        created:
-            new Date().toISOString(),
-        blob: file
-    };
-
-    try {
-        showSaveStatus(
-            "Adding photo...",
-            "saving"
-        );
-
-        await saveAsset(asset);
-
-        const image =
-            document.createElement(
-                "img"
-            );
-
-        image.dataset.assetId =
-            assetId;
-
-        image.src =
-            getAssetObjectUrl(asset);
-
-        image.alt =
-            asset.name;
-
-        image.setAttribute(
-            "contenteditable",
-            "false"
-        );
-
-        insertNodeAtSelection(image);
-
-        saveCurrentLetter();
-
-        showSaveStatus(
-            "Photo added"
-        );
-    } catch (error) {
-        console.error(
-            "Unable to add photograph:",
-            error
-        );
-
-        window.alert(
-            "The photograph could not be added. Please try a smaller image."
-        );
-    } finally {
-        photoInput.value = "";
-    }
-}
 
 /* =====================================================
    DOCUMENT ATTACHMENTS
