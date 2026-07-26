@@ -232,6 +232,7 @@ let saveTimer = null;
 let saveStatusTimer = null;
 
 let savedSelection = null;
+let highlighterActive = false;
 
 let pendingBackup = null;
 
@@ -788,6 +789,11 @@ function updateActiveTab() {
 
 async function displayLetter(letter) {
     currentLetter = letter;
+    highlighterActive = false;
+
+highlightButton.classList.remove(
+    "active"
+);
 
     currentLetterHeading.textContent =
         letter;
@@ -1256,8 +1262,10 @@ function updateChecklistItem(
 
 function highlightSelection() {
     restoreSelection();
-
     editor.focus();
+
+    highlighterActive =
+        !highlighterActive;
 
     try {
         document.execCommand(
@@ -1266,33 +1274,55 @@ function highlightSelection() {
             true
         );
 
-        const successful =
-            document.execCommand(
-                "hiliteColor",
-                false,
-                "#ffe04d"
-            );
+        if (highlighterActive) {
+            const successful =
+                document.execCommand(
+                    "hiliteColor",
+                    false,
+                    "#ffe04d"
+                );
 
-        if (!successful) {
-            document.execCommand(
-                "backColor",
-                false,
-                "#ffe04d"
-            );
+            if (!successful) {
+                document.execCommand(
+                    "backColor",
+                    false,
+                    "#ffe04d"
+                );
+            }
+        } else {
+            const successful =
+                document.execCommand(
+                    "hiliteColor",
+                    false,
+                    "transparent"
+                );
+
+            if (!successful) {
+                document.execCommand(
+                    "backColor",
+                    false,
+                    "transparent"
+                );
+            }
         }
     } catch (error) {
         document.execCommand(
             "backColor",
             false,
-            "#ffe04d"
+            highlighterActive
+                ? "#ffe04d"
+                : "transparent"
         );
     }
 
-    saveSelection();
+    highlightButton.classList.toggle(
+        "active",
+        highlighterActive
+    );
 
+    saveSelection();
     scheduleSave();
 }
-
 /* =====================================================
    INSERTING CONTENT AT THE CURSOR
    ===================================================== */
