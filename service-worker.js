@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Service Worker — Version 2.5.0
+   Service Worker — Version 2.5.1
    ===================================================== */
 
 "use strict";
