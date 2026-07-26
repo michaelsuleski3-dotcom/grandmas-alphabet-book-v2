@@ -10,6 +10,16 @@
 
     <title>Grandma's Alphabet Book</title>
 
+    <meta
+        name="description"
+        content="A simple alphabetized notebook designed to be easy for Grandma to use."
+    >
+
+    <meta
+        name="theme-color"
+        content="#9A4F1E"
+    >
+
     <link
         rel="manifest"
         href="manifest.json"
@@ -18,11 +28,6 @@
     <link
         rel="stylesheet"
         href="style.css?v=260"
-    >
-
-    <meta
-        name="theme-color"
-        content="#9a4f12"
     >
 
     <!-- Apple Home Screen Support -->
@@ -41,36 +46,52 @@
         name="apple-mobile-web-app-title"
         content="Grandma's Book"
     >
+
+    <link
+        rel="apple-touch-icon"
+        href="icons/icon-192.png"
+    >
 </head>
 
 <body>
 
-    <!-- Opening Cover -->
+    <!-- =================================================
+         OPENING COVER
+         ================================================= -->
 
     <div id="cover-screen">
 
-        <div class="cover">
+        <main class="cover">
 
-            <h1>
-                Grandma's Alphabet Book
-            </h1>
+            <div class="cover-decoration">
 
-            <p class="subtitle">
-                Everything in its place.
-            </p>
+                <h1>
+                    Grandma's
+                    <br>
+                    Alphabet Book
+                </h1>
 
-            <button
-                id="open-book"
-                type="button"
-            >
-                Open Book
-            </button>
+                <p class="subtitle">
+                    Everything in its place.
+                </p>
 
-        </div>
+                <button
+                    id="open-book"
+                    class="open-book-button"
+                    type="button"
+                >
+                    Open Book
+                </button>
+
+            </div>
+
+        </main>
 
     </div>
 
-    <!-- Main Book -->
+    <!-- =================================================
+         MAIN BOOK SCREEN
+         ================================================= -->
 
     <div
         id="book-screen"
@@ -79,586 +100,380 @@
 
         <header class="book-header">
 
-            <h2>
-                Grandma's Alphabet Book
-            </h2>
+            <div class="book-title-area">
 
-            <div class="book-actions">
+                <h1 class="book-title">
+                    Grandma's Alphabet Book
+                </h1>
+
+                <p
+                    id="save-status"
+                    class="save-status"
+                    aria-live="polite"
+                >
+                </p>
+
+            </div>
+
+            <nav
+                class="main-actions"
+                aria-label="Book tools"
+            >
 
                 <button
                     id="search-button"
-                    class="book-action-button"
+                    class="header-button"
                     type="button"
-                    aria-label="Search the book"
-                    title="Search"
+                    aria-label="Search the alphabet book"
                 >
-                    <span
-                        class="book-action-icon"
-                        aria-hidden="true"
-                    >
+                    <span aria-hidden="true">
                         🔍
                     </span>
 
-                    <span>
+                    <span class="button-label">
                         Search
                     </span>
                 </button>
 
                 <button
                     id="export-pdf-button"
-                    class="book-action-button"
+                    class="header-button"
                     type="button"
-                    aria-label="Export the current page as a PDF"
-                    title="Export current page as PDF"
+                    aria-label="Print or save the book as a PDF"
                 >
-                    <span
-                        class="book-action-icon"
-                        aria-hidden="true"
-                    >
-                        📤
+                    <span aria-hidden="true">
+                        📄
                     </span>
 
-                    <span>
+                    <span class="button-label">
                         PDF
                     </span>
                 </button>
 
                 <button
                     id="backup-button"
-                    class="book-action-button"
+                    class="header-button"
                     type="button"
-                    aria-label="Back up the book"
-                    title="Back up the book"
+                    aria-label="Backup or restore the alphabet book"
                 >
-                    <span
-                        class="book-action-icon"
-                        aria-hidden="true"
-                    >
-                        ☁️
+                    <span aria-hidden="true">
+                        💾
                     </span>
 
-                    <span>
+                    <span class="button-label">
                         Backup
                     </span>
                 </button>
 
-            </div>
+            </nav>
 
         </header>
 
-        <div class="book-layout">
+        <!-- =================================================
+             BOOK BODY
+             ================================================= -->
 
-            <main class="page-area">
+        <main class="book-layout">
+
+            <section class="book-page">
 
                 <div class="page-heading">
 
-                    <h3 id="current-letter">
-                        A
-                    </h3>
+                    <span class="page-label">
+                        Letter
+                    </span>
 
-                    <div
-                        id="save-status"
-                        class="save-status"
-                        aria-live="polite"
-                        aria-atomic="true"
-                    >
-                        Saved
-                    </div>
+                    <h2 id="current-letter">
+                        A
+                    </h2>
 
                 </div>
 
                 <div
-                    id="editor-shell"
-                    class="editor-shell"
-                >
+                    id="editor"
+                    class="editor"
+                    contenteditable="true"
+                    spellcheck="true"
+                    autocapitalize="sentences"
+                    aria-label="Alphabet book page"
+                    data-placeholder="Tap here to begin writing..."
+                ></div>
 
-                    <div
-                        id="editor"
-                        class="editor"
-                        contenteditable="true"
-                        spellcheck="true"
-                        role="textbox"
-                        aria-multiline="true"
-                        aria-label="Alphabet page editor"
-                        data-placeholder="Tap here to begin writing..."
-                    ></div>
+            </section>
+
+            <aside
+                id="letter-tabs"
+                class="letter-tabs"
+                aria-label="Alphabet pages"
+            ></aside>
+
+        </main>
+
+        <!-- =================================================
+             END OF SECTION 1
+             Paste Section 2 directly below this line.
+             ================================================= -->
+                     <!-- =================================================
+             FLOATING FORMAT TOOLBAR
+             ================================================= -->
+
+        <div
+            id="format-toolbar"
+            class="format-toolbar hidden"
+            role="toolbar"
+            aria-label="Formatting Toolbar"
+        >
+
+            <button id="undo-button" type="button" title="Undo">↶</button>
+
+            <button id="redo-button" type="button" title="Redo">↷</button>
+
+            <button id="bold-button" type="button" title="Bold"><strong>B</strong></button>
+
+            <button id="italic-button" type="button" title="Italic"><em>I</em></button>
+
+            <button id="size-button" type="button" title="Font Size">
+                Aa
+            </button>
+
+            <button id="color-button" type="button" title="Text Color">
+                🎨
+            </button>
+
+            <button id="highlight-button" type="button" title="Highlight">
+                🖍️
+            </button>
+
+            <button id="checklist-button" type="button" title="Checklist">
+                ☑️
+            </button>
+
+            <button id="photo-button" type="button" title="Insert Photo">
+                📷
+            </button>
+
+            <button id="attachment-button" type="button" title="Attachment">
+                📎
+            </button>
+
+            <button
+                id="close-toolbar-button"
+                type="button"
+                title="Close Toolbar"
+            >
+                ✕
+            </button>
+
+        </div>
+
+        <!-- =================================================
+             FONT SIZE MENU
+             ================================================= -->
+
+        <div
+            id="size-menu"
+            class="popup-menu hidden"
+        >
+
+            <button data-font-size="14px">Small</button>
+
+            <button data-font-size="18px">Normal</button>
+
+            <button data-font-size="24px">Large</button>
+
+            <button data-font-size="32px">Extra Large</button>
+
+        </div>
+
+        <!-- =================================================
+             COLOR MENU
+             ================================================= -->
+
+        <div
+            id="color-menu"
+            class="popup-menu hidden"
+        >
+
+            <button data-text-color="#000000">Black</button>
+
+            <button data-text-color="#c62828">Red</button>
+
+            <button data-text-color="#1565c0">Blue</button>
+
+            <button data-text-color="#2e7d32">Green</button>
+
+            <button data-text-color="#6a1b9a">Purple</button>
+
+            <button data-text-color="#ef6c00">Orange</button>
+
+        </div>
+
+        <!-- =================================================
+             HIDDEN FILE INPUTS
+             ================================================= -->
+
+        <input
+            id="photo-input"
+            type="file"
+            accept="image/*"
+            hidden
+        >
+
+        <input
+            id="attachment-input"
+            type="file"
+            hidden
+        >
+
+        <input
+            id="restore-input"
+            type="file"
+            accept=".json"
+            hidden
+        >
+
+        <!-- =================================================
+             SEARCH WINDOW
+             ================================================= -->
+
+        <div
+            id="search-modal"
+            class="modal hidden"
+        >
+
+            <div class="modal-window">
+
+                <div class="modal-header">
+
+                    <h2>Search</h2>
+
+                    <button
+                        id="close-search-button"
+                        type="button"
+                    >
+                        ✕
+                    </button>
 
                 </div>
 
-            </main>
-
-            <nav
-                id="letter-tabs"
-                aria-label="Alphabet pages"
-            >
-                <!-- A–Z tabs are created by app.js -->
-            </nav>
-
-        </div>
-
-    </div>
-
-    <!-- Floating Formatting Toolbar -->
-
-    <div
-        id="format-toolbar"
-        class="format-toolbar hidden"
-        role="toolbar"
-        aria-label="Text formatting tools"
-        aria-hidden="true"
-    >
-
-        <button
-            id="undo-button"
-            class="format-button"
-            type="button"
-            aria-label="Undo"
-            title="Undo"
-        >
-            ↶
-        </button>
-
-        <button
-            id="redo-button"
-            class="format-button"
-            type="button"
-            aria-label="Redo"
-            title="Redo"
-        >
-            ↷
-        </button>
-
-        <span
-            class="toolbar-divider"
-            aria-hidden="true"
-        ></span>
-
-        <button
-            id="bold-button"
-            class="format-button"
-            type="button"
-            aria-label="Bold"
-            title="Bold"
-        >
-            <strong>
-                B
-            </strong>
-        </button>
-
-        <button
-            id="italic-button"
-            class="format-button italic-button"
-            type="button"
-            aria-label="Italic"
-            title="Italic"
-        >
-            <em>
-                I
-            </em>
-        </button>
-
-        <button
-            id="size-button"
-            class="format-button"
-            type="button"
-            aria-label="Choose text size"
-            title="Text size"
-            aria-haspopup="true"
-            aria-expanded="false"
-        >
-            Aa
-        </button>
-
-        <button
-            id="color-button"
-            class="format-button text-color-button"
-            type="button"
-            aria-label="Choose text color"
-            title="Text color"
-            aria-haspopup="true"
-            aria-expanded="false"
-        >
-            A
-        </button>
-
-        <button
-            id="highlight-button"
-            class="format-button highlight-button"
-            type="button"
-            aria-label="Highlight selected text"
-            title="Highlight selected text"
-        >
-            <span aria-hidden="true">
-                🖍️
-            </span>
-        </button>
-
-        <button
-            id="checklist-button"
-            class="format-button"
-            type="button"
-            aria-label="Insert checklist"
-            title="Insert checklist"
-        >
-            ☑
-        </button>
-
-        <span
-            class="toolbar-divider"
-            aria-hidden="true"
-        ></span>
-
-        <button
-            id="photo-button"
-            class="format-button"
-            type="button"
-            aria-label="Insert a photo"
-            title="Insert photo"
-        >
-            <span aria-hidden="true">
-                📷
-            </span>
-        </button>
-
-        <button
-            id="attachment-button"
-            class="format-button"
-            type="button"
-            aria-label="Attach a document"
-            title="Attach a document"
-        >
-            <span aria-hidden="true">
-                📎
-            </span>
-        </button>
-
-        <button
-            id="close-toolbar-button"
-            class="format-button close-toolbar-button"
-            type="button"
-            aria-label="Close formatting toolbar"
-            title="Close toolbar"
-        >
-            ×
-        </button>
-
-    </div>
-
-    <!-- Text Size Menu -->
-
-    <div
-        id="size-menu"
-        class="format-menu size-menu hidden"
-        role="menu"
-        aria-label="Choose text size"
-        aria-hidden="true"
-    >
-
-        <button
-            type="button"
-            class="size-option size-small"
-            data-size="small"
-            role="menuitem"
-        >
-            Small
-        </button>
-
-        <button
-            type="button"
-            class="size-option size-normal"
-            data-size="normal"
-            role="menuitem"
-        >
-            Normal
-        </button>
-
-        <button
-            type="button"
-            class="size-option size-large"
-            data-size="large"
-            role="menuitem"
-        >
-            Large
-        </button>
-
-    </div>
-
-    <!-- Text Color Menu -->
-
-    <div
-        id="color-menu"
-        class="format-menu color-menu hidden"
-        role="menu"
-        aria-label="Choose text color"
-        aria-hidden="true"
-    >
-
-        <button
-            type="button"
-            class="color-option color-black"
-            data-color="#2b2118"
-            aria-label="Black"
-            title="Black"
-            role="menuitem"
-        ></button>
-
-        <button
-            type="button"
-            class="color-option color-orange"
-            data-color="#9a4f12"
-            aria-label="Dark orange"
-            title="Dark orange"
-            role="menuitem"
-        ></button>
-
-        <button
-            type="button"
-            class="color-option color-blue"
-            data-color="#244b74"
-            aria-label="Dark blue"
-            title="Dark blue"
-            role="menuitem"
-        ></button>
-
-        <button
-            type="button"
-            class="color-option color-green"
-            data-color="#315c3b"
-            aria-label="Forest green"
-            title="Forest green"
-            role="menuitem"
-        ></button>
-
-        <button
-            type="button"
-            class="color-option color-burgundy"
-            data-color="#722f37"
-            aria-label="Burgundy"
-            title="Burgundy"
-            role="menuitem"
-        ></button>
-
-        <button
-            type="button"
-            class="color-option color-plum"
-            data-color="#67345f"
-            aria-label="Plum"
-            title="Plum"
-            role="menuitem"
-        ></button>
-
-    </div>
-
-    <!-- Hidden File Inputs -->
-
-    <input
-        id="photo-input"
-        class="hidden-file-input"
-        type="file"
-        accept="image/*"
-    >
-
-    <input
-        id="attachment-input"
-        class="hidden-file-input"
-        type="file"
-        accept=".pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.csv"
-    >
-
-    <input
-        id="restore-input"
-        class="hidden-file-input"
-        type="file"
-        accept=".json,application/json"
-    >
-
-    <!-- Search Window -->
-
-    <div
-        id="search-modal"
-        class="modal-overlay hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="search-title"
-        aria-hidden="true"
-    >
-
-        <div class="modal-window search-window">
-
-            <div class="modal-header">
-
-                <h3 id="search-title">
-                    Search Grandma's Book
-                </h3>
-
-                <button
-                    id="close-search-button"
-                    class="close-modal-button"
-                    type="button"
-                    aria-label="Close search"
+                <input
+                    id="search-input"
+                    type="search"
+                    placeholder="Search the alphabet book..."
+                    autocomplete="off"
                 >
-                    ×
-                </button>
+
+                <div
+                    id="search-results"
+                    class="search-results"
+                ></div>
 
             </div>
 
-            <label
-                class="search-label"
-                for="search-input"
-            >
-                Search all 26 pages
-            </label>
+        </div>
 
-            <input
-                id="search-input"
-                class="search-input"
-                type="search"
-                placeholder="Enter a name, recipe, note, or word..."
-                autocomplete="off"
-            >
+        <!-- =================================================
+             BACKUP WINDOW
+             ================================================= -->
 
-            <div
-                id="search-results"
-                class="search-results"
-                aria-live="polite"
-                aria-atomic="true"
-            >
-                <p class="search-message">
-                    Type a word or phrase to begin searching.
+        <div
+            id="backup-modal"
+            class="modal hidden"
+        >
+
+            <div class="modal-window">
+
+                <h2>Backup</h2>
+
+                <p>
+                    Download a complete backup of your Alphabet Book
+                    or restore one you saved earlier.
                 </p>
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Backup Window -->
-
-    <div
-        id="backup-modal"
-        class="modal-overlay hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="backup-title"
-        aria-hidden="true"
-    >
-
-        <div class="modal-window backup-window">
-
-            <div class="modal-header">
-
-                <h3 id="backup-title">
-                    Back Up Grandma's Book
-                </h3>
-
-                <button
-                    id="close-backup-button"
-                    class="close-modal-button"
-                    type="button"
-                    aria-label="Close backup window"
-                >
-                    ×
-                </button>
-
-            </div>
-
-            <p class="modal-description">
-                Download a complete backup file and save it to
-                iCloud Drive, Google Drive, Dropbox, or your computer.
-            </p>
-
-            <div class="backup-actions">
 
                 <button
                     id="download-backup-button"
-                    class="modal-action-button"
                     type="button"
                 >
-                    <span aria-hidden="true">
-                        ☁️
-                    </span>
-
                     Download Backup
                 </button>
 
                 <button
                     id="restore-backup-button"
-                    class="modal-action-button secondary-button"
                     type="button"
                 >
-                    <span aria-hidden="true">
-                        ↥
-                    </span>
-
                     Restore Backup
                 </button>
 
-            </div>
-
-            <p class="backup-warning">
-                Restoring a backup will replace the information
-                currently stored in the book.
-            </p>
-
-        </div>
-
-    </div>
-
-    <!-- Restore Confirmation Window -->
-
-    <div
-        id="confirm-modal"
-        class="modal-overlay hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-title"
-        aria-describedby="confirm-message"
-        aria-hidden="true"
-    >
-
-        <div class="modal-window confirm-window">
-
-            <h3 id="confirm-title">
-                Restore Backup?
-            </h3>
-
-            <p id="confirm-message">
-                This will replace the current contents of the book.
-            </p>
-
-            <div class="confirmation-actions">
-
                 <button
-                    id="confirm-cancel-button"
-                    class="modal-action-button secondary-button"
+                    id="close-backup-button"
                     type="button"
                 >
-                    Cancel
-                </button>
-
-                <button
-                    id="confirm-restore-button"
-                    class="modal-action-button danger-button"
-                    type="button"
-                >
-                    Restore
+                    Close
                 </button>
 
             </div>
 
         </div>
 
+        <!-- =================================================
+             END OF SECTION 2
+             Paste Section 3 directly below this line.
+             ================================================= -->
+                     <!-- =================================================
+             RESTORE CONFIRMATION WINDOW
+             ================================================= -->
+
+        <div
+            id="confirm-modal"
+            class="modal hidden"
+        >
+
+            <div class="modal-window">
+
+                <h2>Restore Backup?</h2>
+
+                <p>
+                    Restoring a backup will replace the current
+                    contents of Grandma's Alphabet Book.
+                </p>
+
+                <p>
+                    Make sure you have downloaded a recent backup
+                    before continuing.
+                </p>
+
+                <div class="modal-actions">
+
+                    <button
+                        id="confirm-cancel-button"
+                        type="button"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        id="confirm-restore-button"
+                        type="button"
+                    >
+                        Restore Backup
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- PDF Library -->
+    <!-- =================================================
+         APPLICATION SCRIPT
+         ================================================= -->
 
     <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
+        src="app.js?v=260"
+        defer
     ></script>
-
-    <script src="app.js?v=260"></script>
 
 </body>
 </html>
