@@ -10,17 +10,33 @@
 
     <title>Grandma's Alphabet Book</title>
 
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=250">
+    <link
+        rel="manifest"
+        href="manifest.json"
+    >
 
-    <meta name="theme-color" content="#6B4423">
+    <link
+        rel="stylesheet"
+        href="style.css?v=260"
+    >
+
+    <meta
+        name="theme-color"
+        content="#9a4f12"
+    >
 
     <!-- Apple Home Screen Support -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
     <meta
         name="apple-mobile-web-app-status-bar-style"
         content="black-translucent"
     >
+
     <meta
         name="apple-mobile-web-app-title"
         content="Grandma's Book"
@@ -35,13 +51,18 @@
 
         <div class="cover">
 
-            <h1>Grandma's Alphabet Book</h1>
+            <h1>
+                Grandma's Alphabet Book
+            </h1>
 
             <p class="subtitle">
                 Everything in its place.
             </p>
 
-            <button id="open-book" type="button">
+            <button
+                id="open-book"
+                type="button"
+            >
                 Open Book
             </button>
 
@@ -49,13 +70,18 @@
 
     </div>
 
-    <!-- Main Alphabet Book -->
+    <!-- Main Book -->
 
-    <div id="book-screen" class="hidden">
+    <div
+        id="book-screen"
+        class="hidden"
+    >
 
         <header class="book-header">
 
-            <h2>Grandma's Alphabet Book</h2>
+            <h2>
+                Grandma's Alphabet Book
+            </h2>
 
             <div class="book-actions">
 
@@ -66,19 +92,35 @@
                     aria-label="Search the book"
                     title="Search"
                 >
-                    🔍
-                    <span>Search</span>
+                    <span
+                        class="book-action-icon"
+                        aria-hidden="true"
+                    >
+                        🔍
+                    </span>
+
+                    <span>
+                        Search
+                    </span>
                 </button>
 
                 <button
                     id="export-pdf-button"
                     class="book-action-button"
                     type="button"
-                    aria-label="Export current page as PDF"
+                    aria-label="Export the current page as a PDF"
                     title="Export current page as PDF"
                 >
-                    📤
-                    <span>PDF</span>
+                    <span
+                        class="book-action-icon"
+                        aria-hidden="true"
+                    >
+                        📤
+                    </span>
+
+                    <span>
+                        PDF
+                    </span>
                 </button>
 
                 <button
@@ -88,8 +130,16 @@
                     aria-label="Back up the book"
                     title="Back up the book"
                 >
-                    ☁️
-                    <span>Backup</span>
+                    <span
+                        class="book-action-icon"
+                        aria-hidden="true"
+                    >
+                        ☁️
+                    </span>
+
+                    <span>
+                        Backup
+                    </span>
                 </button>
 
             </div>
@@ -102,12 +152,15 @@
 
                 <div class="page-heading">
 
-                    <h3 id="current-letter">A</h3>
+                    <h3 id="current-letter">
+                        A
+                    </h3>
 
                     <div
                         id="save-status"
                         class="save-status"
                         aria-live="polite"
+                        aria-atomic="true"
                     >
                         Saved
                     </div>
@@ -115,14 +168,22 @@
                 </div>
 
                 <div
-                    id="editor"
-                    contenteditable="true"
-                    spellcheck="true"
-                    role="textbox"
-                    aria-multiline="true"
-                    aria-label="Alphabet page editor"
-                    data-placeholder="Tap here to begin writing..."
-                ></div>
+                    id="editor-shell"
+                    class="editor-shell"
+                >
+
+                    <div
+                        id="editor"
+                        class="editor"
+                        contenteditable="true"
+                        spellcheck="true"
+                        role="textbox"
+                        aria-multiline="true"
+                        aria-label="Alphabet page editor"
+                        data-placeholder="Tap here to begin writing..."
+                    ></div>
+
+                </div>
 
             </main>
 
@@ -144,6 +205,7 @@
         class="format-toolbar hidden"
         role="toolbar"
         aria-label="Text formatting tools"
+        aria-hidden="true"
     >
 
         <button
@@ -178,7 +240,9 @@
             aria-label="Bold"
             title="Bold"
         >
-            <strong>B</strong>
+            <strong>
+                B
+            </strong>
         </button>
 
         <button
@@ -188,25 +252,31 @@
             aria-label="Italic"
             title="Italic"
         >
-            <em>I</em>
+            <em>
+                I
+            </em>
         </button>
 
         <button
             id="size-button"
             class="format-button"
             type="button"
-            aria-label="Text size"
+            aria-label="Choose text size"
             title="Text size"
+            aria-haspopup="true"
+            aria-expanded="false"
         >
             Aa
         </button>
 
         <button
             id="color-button"
-            class="format-button"
+            class="format-button text-color-button"
             type="button"
-            aria-label="Text color"
+            aria-label="Choose text color"
             title="Text color"
+            aria-haspopup="true"
+            aria-expanded="false"
         >
             A
         </button>
@@ -216,9 +286,11 @@
             class="format-button highlight-button"
             type="button"
             aria-label="Highlight selected text"
-            title="Yellow highlighter"
+            title="Highlight selected text"
         >
-            🖍️
+            <span aria-hidden="true">
+                🖍️
+            </span>
         </button>
 
         <button
@@ -240,10 +312,12 @@
             id="photo-button"
             class="format-button"
             type="button"
-            aria-label="Insert photo"
+            aria-label="Insert a photo"
             title="Insert photo"
         >
-            📷
+            <span aria-hidden="true">
+                📷
+            </span>
         </button>
 
         <button
@@ -253,7 +327,19 @@
             aria-label="Attach a document"
             title="Attach a document"
         >
-            📎
+            <span aria-hidden="true">
+                📎
+            </span>
+        </button>
+
+        <button
+            id="close-toolbar-button"
+            class="format-button close-toolbar-button"
+            type="button"
+            aria-label="Close formatting toolbar"
+            title="Close toolbar"
+        >
+            ×
         </button>
 
     </div>
@@ -265,6 +351,7 @@
         class="format-menu size-menu hidden"
         role="menu"
         aria-label="Choose text size"
+        aria-hidden="true"
     >
 
         <button
@@ -303,6 +390,7 @@
         class="format-menu color-menu hidden"
         role="menu"
         aria-label="Choose text color"
+        aria-hidden="true"
     >
 
         <button
@@ -311,6 +399,7 @@
             data-color="#2b2118"
             aria-label="Black"
             title="Black"
+            role="menuitem"
         ></button>
 
         <button
@@ -319,6 +408,7 @@
             data-color="#9a4f12"
             aria-label="Dark orange"
             title="Dark orange"
+            role="menuitem"
         ></button>
 
         <button
@@ -327,6 +417,7 @@
             data-color="#244b74"
             aria-label="Dark blue"
             title="Dark blue"
+            role="menuitem"
         ></button>
 
         <button
@@ -335,6 +426,7 @@
             data-color="#315c3b"
             aria-label="Forest green"
             title="Forest green"
+            role="menuitem"
         ></button>
 
         <button
@@ -343,6 +435,7 @@
             data-color="#722f37"
             aria-label="Burgundy"
             title="Burgundy"
+            role="menuitem"
         ></button>
 
         <button
@@ -351,6 +444,7 @@
             data-color="#67345f"
             aria-label="Plum"
             title="Plum"
+            role="menuitem"
         ></button>
 
     </div>
@@ -386,6 +480,7 @@
         role="dialog"
         aria-modal="true"
         aria-labelledby="search-title"
+        aria-hidden="true"
     >
 
         <div class="modal-window search-window">
@@ -426,6 +521,7 @@
                 id="search-results"
                 class="search-results"
                 aria-live="polite"
+                aria-atomic="true"
             >
                 <p class="search-message">
                     Type a word or phrase to begin searching.
@@ -444,6 +540,7 @@
         role="dialog"
         aria-modal="true"
         aria-labelledby="backup-title"
+        aria-hidden="true"
     >
 
         <div class="modal-window backup-window">
@@ -477,7 +574,11 @@
                     class="modal-action-button"
                     type="button"
                 >
-                    ☁️ Download Backup
+                    <span aria-hidden="true">
+                        ☁️
+                    </span>
+
+                    Download Backup
                 </button>
 
                 <button
@@ -485,7 +586,11 @@
                     class="modal-action-button secondary-button"
                     type="button"
                 >
-                    ↥ Restore Backup
+                    <span aria-hidden="true">
+                        ↥
+                    </span>
+
+                    Restore Backup
                 </button>
 
             </div>
@@ -499,7 +604,7 @@
 
     </div>
 
-    <!-- Confirmation Window -->
+    <!-- Restore Confirmation Window -->
 
     <div
         id="confirm-modal"
@@ -507,6 +612,8 @@
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
+        aria-describedby="confirm-message"
+        aria-hidden="true"
     >
 
         <div class="modal-window confirm-window">
@@ -547,12 +654,11 @@
 
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-        integrity="sha512-YcsIPGdhPK4P/uRWf9JERiVLvzcgHD8X0rjA4rynh8bvxKiGZADprzUwl6YQ8hQaLQzP7nC4hPLxZ0UAE2QWQ=="
         crossorigin="anonymous"
         referrerpolicy="no-referrer"
     ></script>
 
-    <script src="app.js?v=250"></script>
+    <script src="app.js?v=260"></script>
 
 </body>
 </html>
