@@ -1806,7 +1806,12 @@ and
         text-decoration: underline;
     }
 }
-
+.yellow-highlight {
+    background-color: #fff176;
+    color: inherit;
+    border-radius: 0.15em;
+    padding: 0 0.08em;
+}
 
 /* =====================================================
    GRANDMA'S ALPHABET BOOK
