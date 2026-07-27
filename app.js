@@ -1469,7 +1469,6 @@ function applyHighlight() {
         range.collapsed
     ) {
         finishToolbarAction();
-
         return;
     }
 
@@ -1495,11 +1494,16 @@ function applyHighlight() {
 
         scheduleSave();
 
-        finishToolbarAction();
+        savedSelection = null;
+        closeAllFormattingMenus();
+        hideFormattingToolbar();
+        clearBrowserSelection();
 
-        placeCaretBeforeMarker(
-            marker
-        );
+        requestAnimationFrame(() => {
+            placeCaretBeforeMarker(
+                marker
+            );
+        });
 
         return;
     }
@@ -1543,11 +1547,16 @@ function applyHighlight() {
 
     scheduleSave();
 
-    finishToolbarAction();
+    savedSelection = null;
+    closeAllFormattingMenus();
+    hideFormattingToolbar();
+    clearBrowserSelection();
 
-    placeCaretBeforeMarker(
-        marker
-    );
+    requestAnimationFrame(() => {
+        placeCaretBeforeMarker(
+            marker
+        );
+    });
 }
 
 /* =====================================================
