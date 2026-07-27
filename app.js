@@ -1077,72 +1077,20 @@ function positionFormattingToolbar() {
         return;
     }
 
-    if (window.innerWidth <= 560) {
-        formatToolbar.style.left =
-            "8px";
-
-        formatToolbar.style.top =
-            "auto";
-
-        formatToolbar.style.right =
-            "8px";
-
-        formatToolbar.style.bottom =
-            "8px";
-
-        return;
-    }
-
-    const rectangle =
-        getSelectionRectangle();
-
-    if (!rectangle) {
-        return;
-    }
+    formatToolbar.style.left =
+        "50%";
 
     formatToolbar.style.right =
         "auto";
 
-    const toolbarWidth =
-        formatToolbar.offsetWidth;
-
-    const toolbarHeight =
-        formatToolbar.offsetHeight;
-
-    let left =
-        rectangle.left +
-        rectangle.width / 2 -
-        toolbarWidth / 2;
-
-    let top =
-        rectangle.top -
-        toolbarHeight -
-        14;
-
-    left =
-        Math.max(
-            9,
-            Math.min(
-                left,
-                window.innerWidth -
-                toolbarWidth -
-                9
-            )
-        );
-
-    if (top < 9) {
-        top =
-            rectangle.bottom + 14;
-    }
-
-    formatToolbar.style.left =
-        `${left}px`;
-
     formatToolbar.style.top =
-        `${top}px`;
+        "calc(12px + env(safe-area-inset-top))";
 
     formatToolbar.style.bottom =
         "auto";
+
+    formatToolbar.style.transform =
+        "translateX(-50%)";
 }
 
 function updateToolbarState() {
