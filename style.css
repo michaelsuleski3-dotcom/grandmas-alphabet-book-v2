@@ -989,7 +989,8 @@ input:focus-visible,
 .format-toolbar {
     position: fixed;
     left: 50%;
-    bottom: calc(14px + var(--safe-bottom));
+    top: calc(12px + env(safe-area-inset-top));
+    bottom: auto;
     z-index: 500;
 
     display: flex;
