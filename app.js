@@ -1334,7 +1334,132 @@ function findClosestHighlight(node) {
 
     return null;
 }
+function placeCaretBeforeMarker(marker) {
+    if (!marker || !marker.parentNode) {
+        return;
+    }
 
+    const selection =
+        window.getSelection();
+
+    const range =
+        document.createRange();
+
+    range.setStartBefore(marker);
+    range.collapse(true);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    marker.remove();
+
+    editor.focus();
+}
+
+function removeSelectedHighlight(
+    range,
+    highlightElement
+) {
+    const beforeRange =
+        document.createRange();
+
+    beforeRange.selectNodeContents(
+        highlightElement
+    );
+
+    beforeRange.setEnd(
+        range.startContainer,
+        range.startOffset
+    );
+
+    const afterRange =
+        document.createRange();
+
+    afterRange.selectNodeContents(
+        highlightElement
+    );
+
+    afterRange.setStart(
+        range.endContainer,
+        range.endOffset
+    );
+
+    const beforeContent =
+        beforeRange.cloneContents();
+
+    const selectedContent =
+        range.cloneContents();
+
+    const afterContent =
+        afterRange.cloneContents();
+
+    const replacement =
+        document.createDocumentFragment();
+
+    if (
+        beforeContent.textContent ||
+        beforeContent.childNodes.length
+    ) {
+        const beforeHighlight =
+            document.createElement(
+                "span"
+            );
+
+        beforeHighlight.className =
+            "yellow-highlight";
+
+        beforeHighlight.appendChild(
+            beforeContent
+        );
+
+        replacement.appendChild(
+            beforeHighlight
+        );
+    }
+
+    replacement.appendChild(
+        selectedContent
+    );
+
+    const marker =
+        document.createElement(
+            "span"
+        );
+
+    marker.setAttribute(
+        "data-caret-marker",
+        "true"
+    );
+
+    replacement.appendChild(marker);
+
+    if (
+        afterContent.textContent ||
+        afterContent.childNodes.length
+    ) {
+        const afterHighlight =
+            document.createElement(
+                "span"
+            );
+
+        afterHighlight.className =
+            "yellow-highlight";
+
+        afterHighlight.appendChild(
+            afterContent
+        );
+
+        replacement.appendChild(
+            afterHighlight
+        );
+    }
+
+    highlightElement.replaceWith(
+        replacement
+    );
+
+    return marker;
+}
 function applyHighlight() {
     const range =
         getSelectedRange();
@@ -1362,15 +1487,19 @@ function applyHighlight() {
         startHighlight &&
         startHighlight === endHighlight
     ) {
-        unwrapElement(
-            startHighlight
-        );
+        const marker =
+            removeSelectedHighlight(
+                range,
+                startHighlight
+            );
 
         scheduleSave();
 
         finishToolbarAction();
 
-        editor.focus();
+        placeCaretBeforeMarker(
+            marker
+        );
 
         return;
     }
@@ -1400,11 +1529,25 @@ function applyHighlight() {
         );
     }
 
+    const marker =
+        document.createElement(
+            "span"
+        );
+
+    marker.setAttribute(
+        "data-caret-marker",
+        "true"
+    );
+
+    wrapper.after(marker);
+
     scheduleSave();
 
     finishToolbarAction();
 
-    editor.focus();
+    placeCaretBeforeMarker(
+        marker
+    );
 }
 
 /* =====================================================
