@@ -1,24 +1,24 @@
 /* =====================================================
-   Grandma's Alphabet Book
-   Service Worker — Version 2.5.1
+   GRANDMA'S ALPHABET BOOK
+   SERVICE WORKER
+   VERSION 2.6.0
    ===================================================== */
 
-"use strict";
-
 const CACHE_NAME =
-    "grandmas-alphabet-book-v2-5-1";
+    "grandmas-alphabet-book-v2.6.0";
 
 const APP_FILES = [
     "./",
     "./index.html",
-    "./style.css?v=250",
-    "./app.js?v=250",
-    "./manifest.json"
+    "./style.css?v=260",
+    "./app.js?v=260",
+    "./manifest.json",
+
 ];
+
 
 /* =====================================================
    INSTALL
-
    Save the main app files for offline use.
    ===================================================== */
 
@@ -40,10 +40,10 @@ self.addEventListener(
     }
 );
 
+
 /* =====================================================
    ACTIVATE
-
-   Remove older versions of the app cache.
+   Remove old versions of the cache.
    ===================================================== */
 
 self.addEventListener(
@@ -65,7 +65,7 @@ self.addEventListener(
                                     );
                                 }
 
-                                return null;
+                                return undefined;
                             }
                         )
                     );
@@ -77,38 +77,23 @@ self.addEventListener(
     }
 );
 
+
 /* =====================================================
    FETCH
-
-   HTML pages:
-   Try the internet first, then use the saved version.
-
-   App files:
-   Use the saved version first, while checking for
-   an updated version in the background.
-
-   Other files:
-   Try the internet first and save successful responses.
+   Use the newest network version when available.
+   Fall back to the saved offline version.
    ===================================================== */
 
 self.addEventListener(
     "fetch",
     (event) => {
-        const request =
-            event.request;
+        const request = event.request;
 
         if (
             request.method !== "GET"
         ) {
             return;
         }
-
-        const requestUrl =
-            new URL(request.url);
-
-        /*
-        Page navigation
-        */
 
         if (
             request.mode === "navigate"
@@ -130,15 +115,9 @@ self.addEventListener(
 
                         return response;
                     })
-                    .catch(async () => {
-                        return (
-                            await caches.match(
-                                "./index.html"
-                            )
-                        ) || (
-                            await caches.match(
-                                "./"
-                            )
+                    .catch(() => {
+                        return caches.match(
+                            "./index.html"
                         );
                     })
             );
@@ -146,76 +125,13 @@ self.addEventListener(
             return;
         }
 
-        /*
-        Local application files
-        */
-
-        if (
-            requestUrl.origin ===
-            self.location.origin
-        ) {
-            event.respondWith(
-                caches
-                    .match(request)
-                    .then(
-                        (cachedResponse) => {
-                            const networkResponse =
-                                fetch(request)
-                                    .then(
-                                        (response) => {
-                                            if (
-                                                response &&
-                                                response.ok
-                                            ) {
-                                                const responseCopy =
-                                                    response.clone();
-
-                                                caches
-                                                    .open(
-                                                        CACHE_NAME
-                                                    )
-                                                    .then(
-                                                        (cache) => {
-                                                            cache.put(
-                                                                request,
-                                                                responseCopy
-                                                            );
-                                                        }
-                                                    );
-                                            }
-
-                                            return response;
-                                        }
-                                    )
-                                    .catch(() => {
-                                        return cachedResponse;
-                                    });
-
-                            return (
-                                cachedResponse ||
-                                networkResponse
-                            );
-                        }
-                    )
-            );
-
-            return;
-        }
-
-        /*
-        External resources, including the PDF library
-        */
-
         event.respondWith(
             fetch(request)
                 .then((response) => {
                     if (
                         !response ||
-                        (
-                            !response.ok &&
-                            response.type !==
-                            "opaque"
-                        )
+                        response.status !== 200 ||
+                        response.type === "opaque"
                     ) {
                         return response;
                     }
@@ -243,11 +159,10 @@ self.addEventListener(
     }
 );
 
-/* =====================================================
-   UPDATE MESSAGE
 
-   Allows the app to activate a newly installed
-   service worker immediately.
+/* =====================================================
+   MESSAGE
+   Allow the app to activate an updated worker.
    ===================================================== */
 
 self.addEventListener(
@@ -261,3 +176,10 @@ self.addEventListener(
         }
     }
 );
+
+
+/* =====================================================
+   GRANDMA'S ALPHABET BOOK
+   SERVICE WORKER VERSION 2.6.0
+   END OF FILE
+   ===================================================== */
