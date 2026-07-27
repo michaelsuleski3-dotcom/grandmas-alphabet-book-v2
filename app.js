@@ -1584,6 +1584,28 @@ function applyFontSize(size) {
     wrapper.style.fontSize =
         size;
 
+    switch (size) {
+        case "14px":
+            wrapper.style.lineHeight =
+                "34px";
+            break;
+
+        case "18px":
+            wrapper.style.lineHeight =
+                "34px";
+            break;
+
+        case "24px":
+            wrapper.style.lineHeight =
+                "48px";
+            break;
+
+        case "32px":
+            wrapper.style.lineHeight =
+                "64px";
+            break;
+    }
+
     try {
         range.surroundContents(
             wrapper
@@ -1607,7 +1629,6 @@ function applyFontSize(size) {
 
     editor.focus();
 }
-
 /* =====================================================
    TEXT COLOR
    ===================================================== */
