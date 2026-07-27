@@ -13,7 +13,8 @@ const APP_FILES = [
     "./style.css?v=260",
     "./app.js?v=260",
     "./manifest.json",
-
+    "./grandmas-icon-192.png",
+    "./grandmas-icon-512.png"
 ];
 
 
