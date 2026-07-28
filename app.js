@@ -1587,22 +1587,22 @@ function applyFontSize(size) {
     switch (size) {
     case "14px":
         wrapper.style.lineHeight =
-            "36px";
+            "34px";
         break;
 
     case "18px":
         wrapper.style.lineHeight =
-            "36px";
+            "34px";
         break;
 
     case "24px":
         wrapper.style.lineHeight =
-            "36px";
+            "48px";
         break;
 
     case "32px":
         wrapper.style.lineHeight =
-            "36px";
+            "64px";
         break;
 }
 
