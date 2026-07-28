@@ -96,9 +96,6 @@ const italicButton =
         "italic-button"
     );
 
-const sizeButton =
-    document.getElementById("size-button");
-
 const colorButton =
     document.getElementById(
         "color-button"
@@ -123,9 +120,6 @@ const attachmentButton =
     document.getElementById(
         "attachment-button"
     );
-
-const sizeMenu =
-    document.getElementById("size-menu");
 
 const colorMenu =
     document.getElementById("color-menu");
@@ -316,7 +310,6 @@ function showSaveStatus(
 }
 
 function closeAllFormattingMenus() {
-    sizeMenu?.classList.add("hidden");
     colorMenu?.classList.add("hidden");
 }
 
@@ -1223,26 +1216,6 @@ function positionMenu(menu, button) {
         `${Math.max(8, top)}px`;
 }
 
-function toggleSizeMenu() {
-    if (!sizeMenu) {
-        return;
-    }
-
-    const shouldOpen =
-        sizeMenu.classList.contains(
-            "hidden"
-        );
-
-    closeAllFormattingMenus();
-
-    if (shouldOpen) {
-        positionMenu(
-            sizeMenu,
-            sizeButton
-        );
-    }
-}
-
 function toggleColorMenu() {
     if (!colorMenu) {
         return;
@@ -1557,67 +1530,6 @@ function applyHighlight() {
             marker
         );
     });
-}
-
-/* =====================================================
-   TEXT SIZE
-   ===================================================== */
-
-function applyFontSize(size) {
-    const range =
-        getSelectedRange();
-
-    if (
-        !range ||
-        range.collapsed
-    ) {
-        finishToolbarAction();
-
-        return;
-    }
-
-    const wrapper =
-        document.createElement(
-            "span"
-        );
-
-    wrapper.style.fontSize =
-        size;
-
-    switch (size) {
-    case "18px":
-        wrapper.style.lineHeight =
-            "34px";
-        break;
-
-    case "24px":
-        wrapper.style.lineHeight =
-            "36px";
-        break;
-}
-
-    try {
-        range.surroundContents(
-            wrapper
-        );
-    } catch (error) {
-        const fragment =
-            range.extractContents();
-
-        wrapper.appendChild(
-            fragment
-        );
-
-        range.insertNode(
-            wrapper
-        );
-    }
-
-    scheduleSave();
-
-    finishToolbarAction();
-
-    editor.focus();
 }
 /* =====================================================
    TEXT COLOR
@@ -3202,9 +3114,6 @@ function handleSelectionChange() {
         !formatToolbar?.contains(
             document.activeElement
         ) &&
-        !sizeMenu?.contains(
-            document.activeElement
-        ) &&
         !colorMenu?.contains(
             document.activeElement
         )
@@ -3221,11 +3130,6 @@ function handleDocumentPointerDown(
             event.target
         );
 
-    const clickedSizeMenu =
-        sizeMenu?.contains(
-            event.target
-        );
-
     const clickedColorMenu =
         colorMenu?.contains(
             event.target
@@ -3233,7 +3137,6 @@ function handleDocumentPointerDown(
 
     if (
         clickedToolbar ||
-        clickedSizeMenu ||
         clickedColorMenu
     ) {
         return;
@@ -3287,16 +3190,8 @@ function connectToolbarButtons() {
                 "italic"
             );
         }
-    );
 
-    sizeButton?.addEventListener(
-        "click",
-        (event) => {
-            event.stopPropagation();
-
-            toggleSizeMenu();
         }
-    );
 
     colorButton?.addEventListener(
         "click",
@@ -3350,36 +3245,6 @@ function connectToolbarButtons() {
         }
     );
 }
-
-/* =====================================================
-   SIZE MENU EVENTS
-   ===================================================== */
-
-function connectSizeMenu() {
-    if (!sizeMenu) {
-        return;
-    }
-
-    const buttons =
-        sizeMenu.querySelectorAll(
-            "[data-font-size]"
-        );
-
-    buttons.forEach(
-        (button) => {
-            button.addEventListener(
-                "click",
-                () => {
-                    applyFontSize(
-                        button.dataset
-                            .fontSize
-                    );
-                }
-            );
-        }
-    );
-}
-
 /* =====================================================
    COLOR MENU EVENTS
    ===================================================== */
@@ -3673,7 +3538,6 @@ function cleanEditorContent() {
 function preserveSelectionOnToolbarPress() {
     const controls = [
         formatToolbar,
-        sizeMenu,
         colorMenu
     ];
 
@@ -3728,11 +3592,6 @@ function prepareAccessibility() {
     formatToolbar?.setAttribute(
         "aria-label",
         "Text formatting"
-    );
-
-    sizeMenu?.setAttribute(
-        "role",
-        "menu"
     );
 
     colorMenu?.setAttribute(
@@ -3838,8 +3697,6 @@ function initializeApp() {
     prepareAccessibility();
 
     connectToolbarButtons();
-
-    connectSizeMenu();
 
     connectColorMenu();
 
