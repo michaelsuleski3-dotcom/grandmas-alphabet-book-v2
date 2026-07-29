@@ -3184,14 +3184,15 @@ function connectToolbarButtons() {
     );
 
     italicButton?.addEventListener(
-        "click",
-        () => {
-            runEditorCommand(
-                "italic"
-            );
-        }
+    "click",
+    () => {
+        runEditorCommand(
+            "italic"
+        );
+    }
+);
 
-        }
+    colorButton?.addEventListener(
 
     colorButton?.addEventListener(
         "click",
