@@ -3193,8 +3193,6 @@ function connectToolbarButtons() {
 );
 
     colorButton?.addEventListener(
-
-    colorButton?.addEventListener(
         "click",
         (event) => {
             event.stopPropagation();
