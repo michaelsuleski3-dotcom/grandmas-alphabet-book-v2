@@ -2781,19 +2781,65 @@ async function downloadBackup() {
    RESTORE BACKUP
    ===================================================== */
 
-function validateBackupData(
-    backup
-) {
-    return Boolean(
-        backup &&
-        typeof backup ===
-            "object" &&
+function normalizeBackupData(backup) {
+    if (
+        !backup ||
+        typeof backup !== "object" ||
+        Array.isArray(backup)
+    ) {
+        return null;
+    }
+
+    // New backup format
+    if (
         backup.pages &&
-        typeof backup.pages ===
-            "object" &&
-        Array.isArray(
-            backup.assets
-        )
+        typeof backup.pages === "object"
+    ) {
+        return {
+            ...backup,
+            pages: backup.pages,
+            assets: Array.isArray(backup.assets)
+                ? backup.assets
+                : [],
+            lastLetter: backup.lastLetter || "A"
+        };
+    }
+
+    // Older backup format:
+    // letters A-Z are stored directly in the file
+    const hasLetterPages =
+        alphabet.some((letter) =>
+            Object.prototype.hasOwnProperty.call(
+                backup,
+                letter
+            )
+        );
+
+    if (hasLetterPages) {
+        const pages = {};
+
+        alphabet.forEach((letter) => {
+            pages[letter] =
+                typeof backup[letter] === "string"
+                    ? backup[letter]
+                    : "";
+        });
+
+        return {
+            app: "Grandma's Alphabet Book",
+            version: "legacy",
+            pages,
+            assets: [],
+            lastLetter: "A"
+        };
+    }
+
+    return null;
+}
+
+function validateBackupData(backup) {
+    return Boolean(
+        normalizeBackupData(backup)
     );
 }
 
@@ -2827,7 +2873,7 @@ async function handleRestoreFile(
         }
 
         pendingBackup =
-            backup;
+        normalizeBackupData(backup);
 
         backupModal.classList.add(
             "hidden"
