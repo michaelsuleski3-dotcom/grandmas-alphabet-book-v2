@@ -982,37 +982,29 @@ input:focus-visible,
    END OF STYLE SECTION 2
    Paste Style Section 3 directly below.
    ===================================================== */
-   /* =====================================================
-   FLOATING FORMAT TOOLBAR
+/* =====================================================
+   SIMPLE PERMANENT TOOLBAR
    ===================================================== */
 
 .format-toolbar {
-    position: fixed;
-    left: 50%;
-    top: calc(12px + env(safe-area-inset-top));
-    bottom: auto;
-    z-index: 500;
+    position: sticky;
 
-    display: flex;
-    align-items: center;
+    top: var(--header-height);
+
+    z-index: 250;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
     gap: 6px;
 
-    width: min(
-        calc(
-            100vw -
-            var(--safe-left) -
-            var(--safe-right) -
-            18px
-        ),
-        720px
-    );
+    width: 100%;
 
-    padding: 8px;
+    padding: 8px 10px;
 
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-
-    transform: translateX(-50%);
+    overflow: visible;
 
     background:
         linear-gradient(
@@ -1021,32 +1013,27 @@ input:focus-visible,
             rgba(231, 211, 169, 0.98)
         );
 
-    border: 2px solid #76531b;
-    border-radius: 14px;
+    border-bottom: 2px solid #76531b;
 
     box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.34);
-
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-}
-
-.format-toolbar::-webkit-scrollbar {
-    display: none;
+        0 3px 8px rgba(0, 0, 0, 0.18);
 }
 
 .format-toolbar button {
-    display: inline-flex;
-    flex: 0 0 auto;
+    display: flex;
+
     align-items: center;
     justify-content: center;
 
-    min-width: 44px;
-    min-height: 44px;
+    gap: 5px;
 
-    padding: 7px 10px;
+    min-width: 0;
+    min-height: 48px;
+
+    padding: 6px 5px;
 
     color: var(--ink);
+
     background: var(--button-background);
 
     border: 1px solid var(--button-border);
@@ -1057,7 +1044,8 @@ input:focus-visible,
         Helvetica,
         sans-serif;
 
-    font-size: 1.05rem;
+    font-size: 0.9rem;
+    font-weight: 700;
 
     cursor: pointer;
 
@@ -1074,13 +1062,9 @@ input:focus-visible,
     transform: translateY(1px);
 }
 
-#close-toolbar-button {
-    color: #ffffff;
-    background: var(--danger);
-    border-color: #762521;
+.format-toolbar button:disabled {
+    opacity: 0.45;
 }
-
-
 /* =====================================================
    POPUP MENUS
    ===================================================== */
@@ -1419,15 +1403,7 @@ input:focus-visible,
    ===================================================== */
 
 @media (max-width: 480px) {
-    .format-toolbar {
-        left: 8px;
-        right: 8px;
-
-        width: auto;
-
-        transform: none;
-    }
-
+    
     .popup-menu {
         bottom: calc(78px + var(--safe-bottom));
     }
@@ -1632,10 +1608,6 @@ and
 
     .editor {
         min-height: 420px;
-    }
-
-    .format-toolbar {
-        bottom: calc(6px + var(--safe-bottom));
     }
 
     .popup-menu {
