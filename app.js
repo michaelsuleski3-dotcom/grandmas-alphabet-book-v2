@@ -1195,13 +1195,10 @@ function toggleSizeMenu() {
 }
 
 function applyFontSize(fontSize) {
-    const range =
-        getSelectedRange();
+    const restored =
+        restoreSelection();
 
-    if (
-        !range ||
-        range.collapsed
-    ) {
+    if (!restored) {
         window.alert(
             "Select the words you want to resize first."
         );
@@ -1209,28 +1206,18 @@ function applyFontSize(fontSize) {
         return;
     }
 
-    const wrapper =
-        document.createElement(
-            "span"
-        );
-
-    wrapper.style.fontSize =
-        fontSize;
+    editor.focus();
 
     try {
-        range.surroundContents(
-            wrapper
+        document.execCommand(
+            "fontSize",
+            false,
+            fontSize
         );
     } catch (error) {
-        const fragment =
-            range.extractContents();
-
-        wrapper.appendChild(
-            fragment
-        );
-
-        range.insertNode(
-            wrapper
+        console.error(
+            "Unable to change text size:",
+            error
         );
     }
 
@@ -1240,7 +1227,6 @@ function applyFontSize(fontSize) {
 
     editor.focus();
 }
-
 /* =====================================================
    WEB LINKS
    ===================================================== */
