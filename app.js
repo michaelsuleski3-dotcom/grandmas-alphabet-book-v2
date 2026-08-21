@@ -2607,6 +2607,37 @@ function handleEditorChange(event) {
 }
 
 function handleEditorClick(event) {
+
+    /* ---------------------------------------------
+       PHOTO
+       Tap a photo to place the cursor directly
+       after it. Backspace can then delete it.
+       --------------------------------------------- */
+
+    const photo =
+        event.target.closest(
+            ".editor-photo"
+        );
+
+    if (photo) {
+        editor.focus();
+
+        placeCursorAfter(photo);
+
+        savedSelection =
+            window
+                .getSelection()
+                ?.getRangeAt(0)
+                .cloneRange() || null;
+
+        return;
+    }
+
+
+    /* ---------------------------------------------
+       ATTACHMENT
+       --------------------------------------------- */
+
     const attachment =
         event.target.closest(
             ".attachment-card"
@@ -2615,6 +2646,11 @@ function handleEditorClick(event) {
     if (attachment) {
         return;
     }
+
+
+    /* ---------------------------------------------
+       CHECKLIST
+       --------------------------------------------- */
 
     const checklistText =
         event.target.closest(
