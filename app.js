@@ -1251,23 +1251,26 @@ function normalizeWebAddress(address) {
 }
 
 function addWebLink() {
-    const range =
-        getSelectedRange();
+    /*
+       Remember whether Grandma already
+       selected some words.
+    */
 
-    if (
-        !range ||
-        range.collapsed
-    ) {
-        window.alert(
-            "Select the words you want to turn into a link first."
-        );
+    const hasSelectedText =
+        selectionContainsWords();
 
-        return;
+    if (selectionIsInsideEditor()) {
+        saveSelection();
     }
+
+
+    /*
+       Ask for the web address.
+    */
 
     const address =
         window.prompt(
-            "Paste the web address:"
+            "Paste or type the web address:"
         );
 
     const href =
@@ -1281,6 +1284,11 @@ function addWebLink() {
         return;
     }
 
+
+    /*
+       Create the link.
+    */
+
     const link =
         document.createElement("a");
 
@@ -1291,26 +1299,85 @@ function addWebLink() {
     link.rel =
         "noopener noreferrer";
 
-    try {
-        range.surroundContents(
-            link
-        );
-    } catch (error) {
-        const fragment =
-            range.extractContents();
 
-        link.appendChild(
-            fragment
-        );
+    /*
+       If words were highlighted,
+       turn those words into the link.
+    */
 
-        range.insertNode(
-            link
-        );
+    if (
+        hasSelectedText &&
+        restoreSelection()
+    ) {
+        const selection =
+            window.getSelection();
+
+        if (
+            selection &&
+            selection.rangeCount > 0
+        ) {
+            const range =
+                selection.getRangeAt(0);
+
+            if (!range.collapsed) {
+                try {
+                    range.surroundContents(
+                        link
+                    );
+                } catch (error) {
+                    const fragment =
+                        range.extractContents();
+
+                    link.appendChild(
+                        fragment
+                    );
+
+                    range.insertNode(
+                        link
+                    );
+                }
+
+                scheduleSave();
+
+                finishToolbarAction();
+
+                editor.focus();
+
+                return;
+            }
+        }
     }
+
+
+    /*
+       If nothing was highlighted,
+       insert the web address itself
+       as the clickable link.
+    */
+
+    link.textContent =
+        String(address).trim();
+
+    insertNodeAtSelection(
+        link
+    );
+
+
+    /*
+       Add a space after the link so
+       Grandma can keep typing normally.
+    */
+
+    const space =
+        document.createTextNode(" ");
+
+    link.after(space);
+
+    placeCursorAfter(space);
 
     scheduleSave();
 
-    finishToolbarAction();
+    savedSelection = null;
 
     editor.focus();
 }
