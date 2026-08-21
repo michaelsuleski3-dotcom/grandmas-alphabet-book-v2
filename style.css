@@ -695,3 +695,159 @@ main::after {
         font-size: 1rem;
     }
 }
+/* =====================================================
+   VERSION 2.7 TOOLBAR ONLY
+   Keep the original 2.6 book design
+   ===================================================== */
+
+.format-toolbar {
+    position: sticky;
+
+    top:
+        calc(
+            var(--header-height) +
+            var(--safe-top)
+        );
+
+    left: auto;
+    right: auto;
+    bottom: auto;
+
+    z-index: 250;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 6px;
+
+    width: 100%;
+
+    padding: 8px 10px;
+
+    overflow: visible;
+
+    transform: none;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(255, 250, 240, 0.99),
+            rgba(231, 211, 169, 0.99)
+        );
+
+    border:
+        0;
+
+    border-bottom:
+        2px solid #76531b;
+
+    border-radius: 0;
+
+    box-shadow:
+        0 3px 8px
+        rgba(0, 0, 0, 0.18);
+}
+
+.format-toolbar button {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    min-width: 0;
+    min-height: 48px;
+
+    padding: 6px 5px;
+
+    color: var(--ink);
+
+    background:
+        var(--button-background);
+
+    border:
+        1px solid
+        var(--button-border);
+
+    border-radius: 8px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.8),
+        0 1px 3px
+        rgba(0, 0, 0, 0.14);
+}
+
+.format-toolbar button:active,
+.format-toolbar button.active {
+    background:
+        var(--button-active);
+
+    transform:
+        translateY(1px);
+}
+
+.format-toolbar button:disabled {
+    opacity: 0.45;
+}
+
+
+/* Size menu works with permanent toolbar */
+
+#size-menu {
+    position: fixed;
+
+    z-index: 520;
+
+    width: min(
+        calc(100vw - 28px),
+        260px
+    );
+
+    padding: 10px;
+
+    background: #fffaf0;
+
+    border:
+        2px solid #76531b;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 8px 24px
+        rgba(0, 0, 0, 0.32);
+}
+
+
+/* Phone toolbar */
+
+@media (max-width: 480px) {
+
+    .format-toolbar {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        padding:
+            7px 8px;
+    }
+
+    .format-toolbar button {
+        min-height: 46px;
+
+        font-size: 0.84rem;
+    }
+
+}
