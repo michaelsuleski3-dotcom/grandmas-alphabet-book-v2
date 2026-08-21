@@ -230,57 +230,98 @@
              FLOATING FORMAT TOOLBAR
              ================================================= -->
 
-        <div
-            id="format-toolbar"
-            class="format-toolbar hidden"
-            role="toolbar"
-            aria-label="Formatting Toolbar"
-        >
-
-            <button id="undo-button" type="button" title="Undo">↶</button>
-
-            <button id="redo-button" type="button" title="Redo">↷</button>
-
-            <button id="bold-button" type="button" title="Bold"><strong>B</strong></button>
-
-            <button id="italic-button" type="button" title="Italic"><em>I</em></button>
-
-            <button id="color-button" type="button" title="Text Color">
-                🎨
-            </button>
-
-            <button id="highlight-button" type="button" title="Highlight">
-                🖍️
-            </button>
-
-            <button id="checklist-button" type="button" title="Checklist">
-                ☑️
-            </button>
-
-            <button id="photo-button" type="button" title="Insert Photo">
-                📷
-            </button>
-
-            <button id="attachment-button" type="button" title="Attachment">
-                📎
-            </button>
-
-            <button
-                id="close-toolbar-button"
-                type="button"
-                title="Close Toolbar"
-            >
-                ✕
-            </button>
-
-        </div>
-
         <!-- =================================================
-             FONT SIZE MENU
-             ================================================= -->
+     SIMPLE PERMANENT TOOLBAR
+     ================================================= -->
 
+<div
+    id="format-toolbar"
+    class="format-toolbar"
+    role="toolbar"
+    aria-label="Writing tools"
+>
 
+    <button
+        id="undo-button"
+        type="button"
+        title="Undo"
+    >
+        ↶ Undo
+    </button>
 
+    <button
+        id="redo-button"
+        type="button"
+        title="Redo"
+    >
+        ↷ Redo
+    </button>
+
+    <button
+        id="bold-button"
+        type="button"
+        title="Bold"
+    >
+        <strong>B</strong> Bold
+    </button>
+
+    <button
+        id="size-button"
+        type="button"
+        title="Text Size"
+    >
+        A Size
+    </button>
+
+    <button
+        id="link-button"
+        type="button"
+        title="Add Web Link"
+    >
+        🔗 Link
+    </button>
+
+    <button
+        id="photo-button"
+        type="button"
+        title="Insert Photo"
+    >
+        📷 Photo
+    </button>
+
+</div>
+
+<!-- =================================================
+     FONT SIZE MENU
+     ================================================= -->
+
+<div
+    id="size-menu"
+    class="popup-menu hidden"
+>
+
+    <button
+        type="button"
+        data-font-size="15px"
+    >
+        Small
+    </button>
+
+    <button
+        type="button"
+        data-font-size="18px"
+    >
+        Normal
+    </button>
+
+    <button
+        type="button"
+        data-font-size="24px"
+    >
+        Large
+    </button>
+
+</div>
         <!-- =================================================
              COLOR MENU
              ================================================= -->
