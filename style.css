@@ -988,23 +988,21 @@ input:focus-visible,
 
 .format-toolbar {
     position: sticky;
-
     top: var(--header-height);
-
     z-index: 250;
 
     display: grid;
-
     grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+        repeat(6, auto);
 
+    justify-content: center;
     gap: 6px;
 
-    width: 100%;
+    width: fit-content;
+    max-width: calc(100% - 16px);
 
-    padding: 8px 10px;
-
-    overflow: visible;
+    margin: 8px auto;
+    padding: 7px;
 
     background:
         linear-gradient(
@@ -1013,27 +1011,20 @@ input:focus-visible,
             rgba(231, 211, 169, 0.98)
         );
 
-    border-bottom: 2px solid #76531b;
+    border: 2px solid #76531b;
+    border-radius: 12px;
 
     box-shadow:
         0 3px 8px rgba(0, 0, 0, 0.18);
 }
 
 .format-toolbar button {
-    display: flex;
+    min-width: 70px;
+    min-height: 44px;
 
-    align-items: center;
-    justify-content: center;
-
-    gap: 5px;
-
-    min-width: 0;
-    min-height: 48px;
-
-    padding: 6px 5px;
+    padding: 6px 8px;
 
     color: var(--ink);
-
     background: var(--button-background);
 
     border: 1px solid var(--button-border);
@@ -1044,35 +1035,50 @@ input:focus-visible,
         Helvetica,
         sans-serif;
 
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 700;
 
     cursor: pointer;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.8),
-        0 1px 3px rgba(0, 0, 0, 0.14);
 }
 
 .format-toolbar button:active,
 .format-toolbar button.active,
 .format-toolbar button[aria-pressed="true"] {
     background: var(--button-active);
-
-    transform: translateY(1px);
 }
 
 .format-toolbar button:disabled {
     opacity: 0.45;
 }
+
+
+/* iPhone */
+
+@media (max-width: 600px) {
+
+    .format-toolbar {
+        grid-template-columns:
+            repeat(3, auto);
+
+        width: fit-content;
+    }
+
+    .format-toolbar button {
+        min-width: 92px;
+        min-height: 44px;
+    }
+
+}
+
 /* =====================================================
-   POPUP MENUS
+   POPUP MENU
    ===================================================== */
 
 .popup-menu {
     position: fixed;
+
     left: 50%;
-    bottom: calc(82px + var(--safe-bottom));
+
     z-index: 520;
 
     display: grid;
@@ -1126,7 +1132,6 @@ input:focus-visible,
 .popup-menu button:active {
     background: var(--button-active);
 }
-
 
 /* =====================================================
    MODAL BACKDROP
