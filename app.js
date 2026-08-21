@@ -1,6 +1,6 @@
 /* =====================================================
    Grandma's Alphabet Book
-   Version 2.6.0
+   Version 2.6.3
    ===================================================== */
 
 "use strict";
@@ -77,11 +77,6 @@ const formatToolbar =
         "format-toolbar"
     );
 
-const closeToolbarButton =
-    document.getElementById(
-        "close-toolbar-button"
-    );
-
 const undoButton =
     document.getElementById("undo-button");
 
@@ -91,38 +86,19 @@ const redoButton =
 const boldButton =
     document.getElementById("bold-button");
 
-const italicButton =
-    document.getElementById(
-        "italic-button"
-    );
+const sizeButton =
+    document.getElementById("size-button");
 
-const colorButton =
-    document.getElementById(
-        "color-button"
-    );
-
-const highlightButton =
-    document.getElementById(
-        "highlight-button"
-    );
-
-const checklistButton =
-    document.getElementById(
-        "checklist-button"
-    );
+const linkButton =
+    document.getElementById("link-button");
 
 const photoButton =
     document.getElementById(
         "photo-button"
     );
 
-const attachmentButton =
-    document.getElementById(
-        "attachment-button"
-    );
-
-const colorMenu =
-    document.getElementById("color-menu");
+const sizeMenu =
+    document.getElementById("size-menu");
 
 /* =====================================================
    FILE INPUTS
@@ -310,7 +286,7 @@ function showSaveStatus(
 }
 
 function closeAllFormattingMenus() {
-    colorMenu?.classList.add("hidden");
+    sizeMenu?.classList.add("hidden");
 }
 
 function closeAllModals() {
@@ -628,10 +604,6 @@ async function clearAllAssets() {
 }
 
 /* =====================================================
-   END OF SECTION 1
-   Paste Section 2 immediately below this line.
-   ===================================================== */
-   /* =====================================================
    OBJECT URL MANAGEMENT
    ===================================================== */
 
@@ -825,10 +797,6 @@ async function displayLetter(letter) {
 
     savedSelection = null;
 
-    highlightButton?.classList.remove(
-        "active"
-    );
-
     updateActiveTab();
 
     releaseObjectUrls();
@@ -845,7 +813,7 @@ async function openLetter(letter) {
 
     saveCurrentLetter();
 
-    hideFormattingToolbar();
+    closeAllFormattingMenus();
 
     await displayLetter(letter);
 }
@@ -994,7 +962,11 @@ function clearBrowserSelection() {
     }
 }
 
-function getSelectionRectangle() {
+function getSelectedRange() {
+    if (!restoreSelection()) {
+        return null;
+    }
+
     const selection =
         window.getSelection();
 
@@ -1005,48 +977,23 @@ function getSelectionRectangle() {
         return null;
     }
 
-    const range =
-        selection.getRangeAt(0);
-
-    const rectangles =
-        range.getClientRects();
-
-    if (rectangles.length > 0) {
-        return rectangles[
-            rectangles.length - 1
-        ];
-    }
-
-    return range.getBoundingClientRect();
+    return selection.getRangeAt(0);
 }
 
 /* =====================================================
-   FLOATING TOOLBAR
+   PERMANENT TOOLBAR
    ===================================================== */
 
 function showFormattingToolbar() {
-    if (!selectionContainsWords()) {
-        hideFormattingToolbar();
-
-        return;
+    if (selectionIsInsideEditor()) {
+        saveSelection();
+        updateToolbarState();
     }
-
-    saveSelection();
-
-    formatToolbar?.classList.remove(
-        "hidden"
-    );
-
-    positionFormattingToolbar();
-
-    updateToolbarState();
 }
 
 function hideFormattingToolbar() {
-    formatToolbar?.classList.add(
-        "hidden"
-    );
-
+    // Toolbar stays visible.
+    // Only temporary menus are closed.
     closeAllFormattingMenus();
 }
 
@@ -1055,35 +1002,11 @@ function finishToolbarAction() {
 
     closeAllFormattingMenus();
 
-    hideFormattingToolbar();
-
     clearBrowserSelection();
 }
 
 function positionFormattingToolbar() {
-    if (
-        !formatToolbar ||
-        formatToolbar.classList.contains(
-            "hidden"
-        )
-    ) {
-        return;
-    }
-
-    formatToolbar.style.left =
-        "50%";
-
-    formatToolbar.style.right =
-        "auto";
-
-    formatToolbar.style.top =
-        "calc(12px + env(safe-area-inset-top))";
-
-    formatToolbar.style.bottom =
-        "auto";
-
-    formatToolbar.style.transform =
-        "translateX(-50%)";
+    // Positioning is handled by CSS.
 }
 
 function updateToolbarState() {
@@ -1092,13 +1015,6 @@ function updateToolbarState() {
             "active",
             document.queryCommandState(
                 "bold"
-            )
-        );
-
-        italicButton?.classList.toggle(
-            "active",
-            document.queryCommandState(
-                "italic"
             )
         );
 
@@ -1132,11 +1048,39 @@ function runEditorCommand(
     command,
     value = null
 ) {
+    if (
+        command === "undo" ||
+        command === "redo"
+    ) {
+        editor.focus();
+
+        try {
+            document.execCommand(
+                command,
+                false,
+                value
+            );
+        } catch (error) {
+            console.error(
+                `Unable to run ${command}:`,
+                error
+            );
+        }
+
+        scheduleSave();
+
+        updateToolbarState();
+
+        return;
+    }
+
     const restored =
         restoreSelection();
 
     if (!restored) {
-        finishToolbarAction();
+        window.alert(
+            "Select the words you want to change first."
+        );
 
         return;
     }
@@ -1164,7 +1108,7 @@ function runEditorCommand(
 }
 
 /* =====================================================
-   SIZE AND COLOR MENUS
+   SIZE MENU
    ===================================================== */
 
 function positionMenu(menu, button) {
@@ -1214,15 +1158,29 @@ function positionMenu(menu, button) {
 
     menu.style.top =
         `${Math.max(8, top)}px`;
+
+    menu.style.bottom =
+        "auto";
+
+    menu.style.transform =
+        "none";
 }
 
-function toggleColorMenu() {
-    if (!colorMenu) {
+function toggleSizeMenu() {
+    if (!sizeMenu) {
+        return;
+    }
+
+    if (!savedSelection) {
+        window.alert(
+            "Select the words you want to resize first."
+        );
+
         return;
     }
 
     const shouldOpen =
-        colorMenu.classList.contains(
+        sizeMenu.classList.contains(
             "hidden"
         );
 
@@ -1230,312 +1188,83 @@ function toggleColorMenu() {
 
     if (shouldOpen) {
         positionMenu(
-            colorMenu,
-            colorButton
+            sizeMenu,
+            sizeButton
         );
     }
 }
 
-/* =====================================================
-   END OF SECTION 2
-   Paste Section 3 immediately below this line.
-   ===================================================== */
-   /* =====================================================
-   MANUAL TEXT WRAPPING
-   ===================================================== */
-
-function getSelectedRange() {
-    if (!restoreSelection()) {
-        return null;
-    }
-
-    const selection =
-        window.getSelection();
+function applyFontSize(fontSize) {
+    const range =
+        getSelectedRange();
 
     if (
-        !selection ||
-        selection.rangeCount === 0
+        !range ||
+        range.collapsed
     ) {
-        return null;
-    }
+        window.alert(
+            "Select the words you want to resize first."
+        );
 
-    return selection.getRangeAt(0);
-}
-
-function unwrapElement(element) {
-    const parent =
-        element.parentNode;
-
-    if (!parent) {
         return;
     }
 
-    while (element.firstChild) {
-        parent.insertBefore(
-            element.firstChild,
-            element
+    const wrapper =
+        document.createElement(
+            "span"
+        );
+
+    wrapper.style.fontSize =
+        fontSize;
+
+    try {
+        range.surroundContents(
+            wrapper
+        );
+    } catch (error) {
+        const fragment =
+            range.extractContents();
+
+        wrapper.appendChild(
+            fragment
+        );
+
+        range.insertNode(
+            wrapper
         );
     }
 
-    parent.removeChild(element);
+    scheduleSave();
 
-    parent.normalize();
-}
-
-function findClosestHighlight(node) {
-    let element =
-        node.nodeType ===
-        Node.ELEMENT_NODE
-            ? node
-            : node.parentElement;
-
-    while (
-        element &&
-        element !== editor
-    ) {
-        if (
-            element.classList?.contains(
-                "yellow-highlight"
-            )
-        ) {
-            return element;
-        }
-
-        element =
-            element.parentElement;
-    }
-
-    return null;
-}
-function placeCaretBeforeMarker(marker) {
-    if (!marker || !marker.parentNode) {
-        return;
-    }
-
-    const selection =
-        window.getSelection();
-
-    const range =
-        document.createRange();
-
-    range.setStartBefore(marker);
-    range.collapse(true);
-
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    marker.remove();
+    finishToolbarAction();
 
     editor.focus();
 }
 
-function removeSelectedHighlight(
-    range,
-    highlightElement
-) {
-    const beforeRange =
-        document.createRange();
-
-    beforeRange.selectNodeContents(
-        highlightElement
-    );
-
-    beforeRange.setEnd(
-        range.startContainer,
-        range.startOffset
-    );
-
-    const afterRange =
-        document.createRange();
-
-    afterRange.selectNodeContents(
-        highlightElement
-    );
-
-    afterRange.setStart(
-        range.endContainer,
-        range.endOffset
-    );
-
-    const beforeContent =
-        beforeRange.cloneContents();
-
-    const selectedContent =
-        range.cloneContents();
-
-    const afterContent =
-        afterRange.cloneContents();
-
-    const replacement =
-        document.createDocumentFragment();
-
-    if (
-        beforeContent.textContent ||
-        beforeContent.childNodes.length
-    ) {
-        const beforeHighlight =
-            document.createElement(
-                "span"
-            );
-
-        beforeHighlight.className =
-            "yellow-highlight";
-
-        beforeHighlight.appendChild(
-            beforeContent
-        );
-
-        replacement.appendChild(
-            beforeHighlight
-        );
-    }
-
-    replacement.appendChild(
-        selectedContent
-    );
-
-    const marker =
-        document.createElement(
-            "span"
-        );
-
-    marker.setAttribute(
-        "data-caret-marker",
-        "true"
-    );
-
-    replacement.appendChild(marker);
-
-    if (
-        afterContent.textContent ||
-        afterContent.childNodes.length
-    ) {
-        const afterHighlight =
-            document.createElement(
-                "span"
-            );
-
-        afterHighlight.className =
-            "yellow-highlight";
-
-        afterHighlight.appendChild(
-            afterContent
-        );
-
-        replacement.appendChild(
-            afterHighlight
-        );
-    }
-
-    highlightElement.replaceWith(
-        replacement
-    );
-
-    return marker;
-}
-function applyHighlight() {
-    const range =
-        getSelectedRange();
-
-    if (
-        !range ||
-        range.collapsed
-    ) {
-        finishToolbarAction();
-        return;
-    }
-
-    const startHighlight =
-        findClosestHighlight(
-            range.startContainer
-        );
-
-    const endHighlight =
-        findClosestHighlight(
-            range.endContainer
-        );
-
-    if (
-        startHighlight &&
-        startHighlight === endHighlight
-    ) {
-        const marker =
-            removeSelectedHighlight(
-                range,
-                startHighlight
-            );
-
-        scheduleSave();
-
-        savedSelection = null;
-        closeAllFormattingMenus();
-        hideFormattingToolbar();
-        clearBrowserSelection();
-
-        requestAnimationFrame(() => {
-            placeCaretBeforeMarker(
-                marker
-            );
-        });
-
-        return;
-    }
-
-    const wrapper =
-        document.createElement(
-            "span"
-        );
-
-    wrapper.className =
-        "yellow-highlight";
-
-    try {
-        range.surroundContents(
-            wrapper
-        );
-    } catch (error) {
-        const fragment =
-            range.extractContents();
-
-        wrapper.appendChild(
-            fragment
-        );
-
-        range.insertNode(
-            wrapper
-        );
-    }
-
-    const marker =
-        document.createElement(
-            "span"
-        );
-
-    marker.setAttribute(
-        "data-caret-marker",
-        "true"
-    );
-
-    wrapper.after(marker);
-
-    scheduleSave();
-
-    savedSelection = null;
-    closeAllFormattingMenus();
-    hideFormattingToolbar();
-    clearBrowserSelection();
-
-    requestAnimationFrame(() => {
-        placeCaretBeforeMarker(
-            marker
-        );
-    });
-}
 /* =====================================================
-   TEXT COLOR
+   WEB LINKS
    ===================================================== */
 
-function applyTextColor(color) {
+function normalizeWebAddress(address) {
+    const trimmed =
+        String(address || "").trim();
+
+    if (!trimmed) {
+        return "";
+    }
+
+    if (
+        /^https?:\/\//i.test(
+            trimmed
+        )
+    ) {
+        return trimmed;
+    }
+
+    return `https://${trimmed}`;
+}
+
+function addWebLink() {
     const range =
         getSelectedRange();
 
@@ -1543,33 +1272,53 @@ function applyTextColor(color) {
         !range ||
         range.collapsed
     ) {
-        finishToolbarAction();
+        window.alert(
+            "Select the words you want to turn into a link first."
+        );
 
         return;
     }
 
-    const wrapper =
-        document.createElement(
-            "span"
+    const address =
+        window.prompt(
+            "Paste the web address:"
         );
 
-    wrapper.style.color =
-        color;
+    const href =
+        normalizeWebAddress(
+            address
+        );
+
+    if (!href) {
+        restoreSelection();
+
+        return;
+    }
+
+    const link =
+        document.createElement("a");
+
+    link.href = href;
+
+    link.target = "_blank";
+
+    link.rel =
+        "noopener noreferrer";
 
     try {
         range.surroundContents(
-            wrapper
+            link
         );
     } catch (error) {
         const fragment =
             range.extractContents();
 
-        wrapper.appendChild(
+        link.appendChild(
             fragment
         );
 
         range.insertNode(
-            wrapper
+            link
         );
     }
 
@@ -1663,7 +1412,7 @@ function insertNodeAtSelection(node) {
 }
 
 /* =====================================================
-   CHECKLISTS
+   CHECKLIST SUPPORT FOR EXISTING SAVED CONTENT
    ===================================================== */
 
 function createChecklistItem(
@@ -1714,42 +1463,6 @@ function createChecklistItem(
     );
 
     return item;
-}
-
-function insertChecklist() {
-    hideFormattingToolbar();
-
-    const checklist =
-        createChecklistItem();
-
-    insertNodeAtSelection(
-        checklist
-    );
-
-    const lineBreak =
-        document.createElement(
-            "div"
-        );
-
-    lineBreak.innerHTML =
-        "<br>";
-
-    checklist.after(
-        lineBreak
-    );
-
-    const checklistText =
-        checklist.querySelector(
-            ".checklist-text"
-        );
-
-    placeCursorInsideEnd(
-        checklistText
-    );
-
-    checklistText.focus();
-
-    scheduleSave();
 }
 
 function updateChecklistItem(
@@ -1809,8 +1522,6 @@ async function handlePhotoSelection(
         return;
     }
 
-    hideFormattingToolbar();
-
     for (const file of files) {
         if (
             !file.type.startsWith(
@@ -1827,17 +1538,23 @@ async function handlePhotoSelection(
 
         const asset = {
             id: assetId,
+
             name:
                 file.name ||
                 "Photograph",
+
             type:
                 file.type ||
                 "image/jpeg",
+
             size: file.size,
+
             kind: "photo",
+
             createdAt:
                 new Date()
                     .toISOString(),
+
             blob: file
         };
 
@@ -1912,178 +1629,12 @@ async function handlePhotoSelection(
         }
     }
 
-    editor.focus();
-}
-
-/* =====================================================
-   ATTACHMENT INSERTION
-   ===================================================== */
-
-async function handleAttachmentSelection(
-    event
-) {
-    const files =
-        Array.from(
-            event.target.files || []
-        );
-
-    event.target.value = "";
-
-    if (files.length === 0) {
-        return;
-    }
-
-    hideFormattingToolbar();
-
-    for (const file of files) {
-        const assetId =
-            createUniqueId(
-                "attachment"
-            );
-
-        const asset = {
-            id: assetId,
-            name:
-                file.name ||
-                "Attachment",
-            type:
-                file.type ||
-                "application/octet-stream",
-            size: file.size,
-            kind:
-                "attachment",
-            createdAt:
-                new Date()
-                    .toISOString(),
-            blob: file
-        };
-
-        try {
-            await saveAsset(asset);
-
-            const attachment =
-                document.createElement(
-                    "a"
-                );
-
-            attachment.className =
-                "attachment-card";
-
-            attachment.dataset.assetId =
-                assetId;
-
-            attachment.contentEditable =
-                "false";
-
-            attachment.href =
-                getAssetObjectUrl(
-                    asset
-                );
-
-            attachment.download =
-                asset.name;
-
-            attachment.target =
-                "_blank";
-
-            attachment.rel =
-                "noopener";
-
-            const icon =
-                document.createElement(
-                    "span"
-                );
-
-            icon.className =
-                "attachment-icon";
-
-            icon.textContent =
-                "📎";
-
-            const details =
-                document.createElement(
-                    "span"
-                );
-
-            details.className =
-                "attachment-details";
-
-            const name =
-                document.createElement(
-                    "span"
-                );
-
-            name.className =
-                "attachment-name";
-
-            name.textContent =
-                asset.name;
-
-            const size =
-                document.createElement(
-                    "span"
-                );
-
-            size.className =
-                "attachment-size";
-
-            size.textContent =
-                formatFileSize(
-                    asset.size
-                );
-
-            details.append(
-                name,
-                size
-            );
-
-            attachment.append(
-                icon,
-                details
-            );
-
-            insertNodeAtSelection(
-                attachment
-            );
-
-            const paragraph =
-                document.createElement(
-                    "div"
-                );
-
-            paragraph.innerHTML =
-                "<br>";
-
-            attachment.after(
-                paragraph
-            );
-
-            placeCursorInsideEnd(
-                paragraph
-            );
-
-            scheduleSave();
-        } catch (error) {
-            console.error(
-                "Unable to save attachment:",
-                error
-            );
-
-            showSaveStatus(
-                "File could not be added",
-                "error"
-            );
-        }
-    }
+    savedSelection = null;
 
     editor.focus();
 }
 
 /* =====================================================
-   END OF SECTION 3
-   Paste Section 4 immediately below this line.
-   ===================================================== */
-   /* =====================================================
    SEARCH
    ===================================================== */
 
@@ -2184,6 +1735,7 @@ function searchAllLetters(query) {
         ) {
             results.push({
                 letter,
+
                 snippet:
                     getSearchSnippet(
                         text,
@@ -2268,7 +1820,7 @@ function renderSearchResults(
             );
 
         snippet.className =
-            "search-result-snippet";
+            "search-result-preview";
 
         snippet.textContent =
             result.snippet;
@@ -2300,7 +1852,7 @@ function renderSearchResults(
 }
 
 function openSearchModal() {
-    hideFormattingToolbar();
+    closeAllFormattingMenus();
 
     searchModal.classList.remove(
         "hidden"
@@ -2394,34 +1946,6 @@ function buildPrintableBook() {
         content.innerHTML =
             html;
 
-        content
-            .querySelectorAll(
-                "img[data-asset-id]"
-            )
-            .forEach((image) => {
-                const original =
-                    editor.querySelector(
-                        `img[data-asset-id="${image.dataset.assetId}"]`
-                    );
-
-                if (original?.src) {
-                    image.src =
-                        original.src;
-                }
-            });
-
-        content
-            .querySelectorAll(
-                ".attachment-card"
-            )
-            .forEach(
-                (attachment) => {
-                    attachment.removeAttribute(
-                        "href"
-                    );
-                }
-            );
-
         section.append(
             heading,
             content
@@ -2438,7 +1962,7 @@ function buildPrintableBook() {
 function exportBookAsPdf() {
     saveCurrentLetter();
 
-    hideFormattingToolbar();
+    closeAllFormattingMenus();
 
     const printable =
         buildPrintableBook();
@@ -2465,58 +1989,71 @@ function exportBookAsPdf() {
         <html lang="en">
         <head>
             <meta charset="UTF-8">
+
             <meta
                 name="viewport"
                 content="width=device-width, initial-scale=1.0"
             >
+
             <title>
                 Grandma's Alphabet Book
             </title>
+
             <style>
                 body {
                     font-family:
                         Georgia,
                         "Times New Roman",
                         serif;
+
                     margin: 32px;
+
                     color: #222;
+
                     line-height: 1.5;
                 }
 
                 h1 {
                     text-align: center;
+
                     margin-bottom: 36px;
                 }
 
                 h2 {
                     font-size: 28px;
+
                     border-bottom:
                         2px solid #999;
+
                     padding-bottom: 6px;
                 }
 
                 .print-letter-section {
                     break-after: page;
+
                     page-break-after: always;
                 }
 
                 .print-letter-section:last-child {
                     break-after: auto;
+
                     page-break-after: auto;
                 }
 
                 img {
                     max-width: 100%;
+
                     height: auto;
+
                     display: block;
-                    margin:
-                        14px auto;
+
+                    margin: 14px auto;
                 }
 
                 .attachment-card {
                     display: block;
-                    margin:
-                        8px 0;
+
+                    margin: 8px 0;
                 }
 
                 .yellow-highlight {
@@ -2525,8 +2062,11 @@ function exportBookAsPdf() {
 
                 .checklist-item {
                     display: flex;
+
                     align-items: flex-start;
+
                     gap: 8px;
+
                     margin: 5px 0;
                 }
 
@@ -2534,7 +2074,15 @@ function exportBookAsPdf() {
                 .checklist-text {
                     text-decoration:
                         line-through;
+
                     opacity: 0.65;
+                }
+
+                a {
+                    color: #000;
+
+                    text-decoration:
+                        underline;
                 }
 
                 @media print {
@@ -2544,6 +2092,7 @@ function exportBookAsPdf() {
                 }
             </style>
         </head>
+
         <body>
             ${printable.innerHTML}
         </body>
@@ -2665,12 +2214,18 @@ async function createBackupData() {
 
         assets.push({
             id: asset.id,
+
             name: asset.name,
+
             type: asset.type,
+
             size: asset.size,
+
             kind: asset.kind,
+
             createdAt:
                 asset.createdAt,
+
             dataUrl
         });
     }
@@ -2678,13 +2233,18 @@ async function createBackupData() {
     return {
         app:
             "Grandma's Alphabet Book",
-        version: "2.6.0",
+
+        version: "2.6.3",
+
         createdAt:
             new Date()
                 .toISOString(),
+
         lastLetter:
             currentLetter,
+
         pages,
+
         assets
     };
 }
@@ -2720,6 +2280,7 @@ function downloadJsonFile(
         );
 
     link.href = url;
+
     link.download = filename;
 
     document.body.appendChild(
@@ -2790,29 +2351,35 @@ function normalizeBackupData(backup) {
         return null;
     }
 
-    // New backup format
     if (
         backup.pages &&
         typeof backup.pages === "object"
     ) {
         return {
             ...backup,
+
             pages: backup.pages,
-            assets: Array.isArray(backup.assets)
-                ? backup.assets
-                : [],
-            lastLetter: backup.lastLetter || "A"
+
+            assets:
+                Array.isArray(
+                    backup.assets
+                )
+                    ? backup.assets
+                    : [],
+
+            lastLetter:
+                backup.lastLetter || "A"
         };
     }
 
-    // Older backup format:
-    // letters A-Z are stored directly in the file
     const hasLetterPages =
         alphabet.some((letter) =>
-            Object.prototype.hasOwnProperty.call(
-                backup,
-                letter
-            )
+            Object.prototype
+                .hasOwnProperty
+                .call(
+                    backup,
+                    letter
+                )
         );
 
     if (hasLetterPages) {
@@ -2820,16 +2387,22 @@ function normalizeBackupData(backup) {
 
         alphabet.forEach((letter) => {
             pages[letter] =
-                typeof backup[letter] === "string"
+                typeof backup[letter] ===
+                "string"
                     ? backup[letter]
                     : "";
         });
 
         return {
-            app: "Grandma's Alphabet Book",
+            app:
+                "Grandma's Alphabet Book",
+
             version: "legacy",
+
             pages,
+
             assets: [],
+
             lastLetter: "A"
         };
     }
@@ -2873,7 +2446,7 @@ async function handleRestoreFile(
         }
 
         pendingBackup =
-        normalizeBackupData(backup);
+            normalizeBackupData(backup);
 
         backupModal.classList.add(
             "hidden"
@@ -2936,22 +2509,28 @@ async function restoreBackupData() {
 
             await saveAsset({
                 id: asset.id,
+
                 name:
                     asset.name ||
                     "File",
+
                 type:
                     asset.type ||
                     blob.type,
+
                 size:
                     asset.size ||
                     blob.size,
+
                 kind:
                     asset.kind ||
                     "attachment",
+
                 createdAt:
                     asset.createdAt ||
                     new Date()
                         .toISOString(),
+
                 blob
             });
         }
@@ -3003,7 +2582,7 @@ async function restoreBackupData() {
    ===================================================== */
 
 function openBackupModal() {
-    hideFormattingToolbar();
+    closeAllFormattingMenus();
 
     backupModal.classList.remove(
         "hidden"
@@ -3017,15 +2596,13 @@ function closeBackupModal() {
 }
 
 /* =====================================================
-   END OF SECTION 4
-   Paste Section 5 immediately below this line.
-   ===================================================== */
-   /* =====================================================
    EDITOR INPUT BEHAVIOR
    ===================================================== */
 
 function handleEditorInput() {
     scheduleSave();
+
+    updateToolbarState();
 }
 
 function handleEditorChange(event) {
@@ -3067,7 +2644,7 @@ function handleEditorKeydown(event) {
     if (
         event.key === "Escape"
     ) {
-        hideFormattingToolbar();
+        closeAllFormattingMenus();
 
         return;
     }
@@ -3152,19 +2729,10 @@ function handleEditorPaste(event) {
    ===================================================== */
 
 function handleSelectionChange() {
-    if (
-        selectionContainsWords()
-    ) {
-        showFormattingToolbar();
-    } else if (
-        !formatToolbar?.contains(
-            document.activeElement
-        ) &&
-        !colorMenu?.contains(
-            document.activeElement
-        )
-    ) {
-        hideFormattingToolbar();
+    if (selectionIsInsideEditor()) {
+        saveSelection();
+
+        updateToolbarState();
     }
 }
 
@@ -3176,14 +2744,14 @@ function handleDocumentPointerDown(
             event.target
         );
 
-    const clickedColorMenu =
-        colorMenu?.contains(
+    const clickedSizeMenu =
+        sizeMenu?.contains(
             event.target
         );
 
     if (
         clickedToolbar ||
-        clickedColorMenu
+        clickedSizeMenu
     ) {
         return;
     }
@@ -3193,7 +2761,7 @@ function handleDocumentPointerDown(
             event.target
         )
     ) {
-        hideFormattingToolbar();
+        closeAllFormattingMenus();
     }
 }
 
@@ -3229,79 +2797,42 @@ function connectToolbarButtons() {
         }
     );
 
-    italicButton?.addEventListener(
-    "click",
-    () => {
-        runEditorCommand(
-            "italic"
-        );
-    }
-);
-
-    colorButton?.addEventListener(
+    sizeButton?.addEventListener(
         "click",
         (event) => {
             event.stopPropagation();
 
-            toggleColorMenu();
+            toggleSizeMenu();
         }
     );
 
-    highlightButton?.addEventListener(
+    linkButton?.addEventListener(
         "click",
         () => {
-            applyHighlight();
-        }
-    );
-
-    checklistButton?.addEventListener(
-        "click",
-        () => {
-            insertChecklist();
+            addWebLink();
         }
     );
 
     photoButton?.addEventListener(
         "click",
         () => {
-            hideFormattingToolbar();
-
             photoInput?.click();
         }
     );
-
-    attachmentButton?.addEventListener(
-        "click",
-        () => {
-            hideFormattingToolbar();
-
-            attachmentInput?.click();
-        }
-    );
-
-    closeToolbarButton?.addEventListener(
-        "click",
-        () => {
-            hideFormattingToolbar();
-
-            clearBrowserSelection();
-
-            editor.focus();
-        }
-    );
 }
+
 /* =====================================================
-   COLOR MENU EVENTS
+   SIZE MENU EVENTS
    ===================================================== */
 
-function connectColorMenu() {
-    if (!colorMenu) {
+function connectSizeMenu() {
+    if (!sizeMenu) {
         return;
     }
 
     const buttons =
-        colorMenu.querySelectorAll(
-            "[data-text-color]"
+        sizeMenu.querySelectorAll(
+            "[data-font-size]"
         );
 
     buttons.forEach(
@@ -3309,9 +2840,9 @@ function connectColorMenu() {
             button.addEventListener(
                 "click",
                 () => {
-                    applyTextColor(
+                    applyFontSize(
                         button.dataset
-                            .textColor
+                            .fontSize
                     );
                 }
             );
@@ -3457,11 +2988,6 @@ function connectGlobalEvents() {
         handlePhotoSelection
     );
 
-    attachmentInput?.addEventListener(
-        "change",
-        handleAttachmentSelection
-    );
-
     restoreInput?.addEventListener(
         "change",
         handleRestoreFile
@@ -3503,11 +3029,6 @@ function connectGlobalEvents() {
     );
 
     window.addEventListener(
-        "resize",
-        positionFormattingToolbar
-    );
-
-    window.addEventListener(
         "beforeunload",
         () => {
             saveCurrentLetter();
@@ -3525,17 +3046,13 @@ function connectGlobalEvents() {
             ) {
                 closeAllModals();
 
-                hideFormattingToolbar();
+                closeAllFormattingMenus();
             }
         }
     );
 }
 
 /* =====================================================
-   END OF SECTION 5
-   Paste Section 6 immediately below this line.
-   ===================================================== */
-   /* =====================================================
    CLEAN SAVED CONTENT
    ===================================================== */
 
@@ -3576,14 +3093,14 @@ function cleanEditorContent() {
 }
 
 /* =====================================================
-   PREVENT TOOLBAR BUTTONS FROM
-   DESTROYING THE TEXT SELECTION
+   PRESERVE TEXT SELECTION WHEN
+   GRANDMA TAPS A TOOL BUTTON
    ===================================================== */
 
 function preserveSelectionOnToolbarPress() {
     const controls = [
         formatToolbar,
-        colorMenu
+        sizeMenu
     ];
 
     controls.forEach(
@@ -3636,10 +3153,10 @@ function prepareAccessibility() {
 
     formatToolbar?.setAttribute(
         "aria-label",
-        "Text formatting"
+        "Writing tools"
     );
 
-    colorMenu?.setAttribute(
+    sizeMenu?.setAttribute(
         "role",
         "menu"
     );
@@ -3659,7 +3176,18 @@ function verifyRequiredElements() {
             "current-letter",
             currentLetterHeading
         ],
-        ["editor", editor]
+        ["editor", editor],
+        [
+            "format-toolbar",
+            formatToolbar
+        ],
+        ["undo-button", undoButton],
+        ["redo-button", redoButton],
+        ["bold-button", boldButton],
+        ["size-button", sizeButton],
+        ["link-button", linkButton],
+        ["photo-button", photoButton],
+        ["size-menu", sizeMenu]
     ];
 
     const missing =
@@ -3743,7 +3271,7 @@ function initializeApp() {
 
     connectToolbarButtons();
 
-    connectColorMenu();
+    connectSizeMenu();
 
     connectSearchEvents();
 
@@ -3757,8 +3285,10 @@ function initializeApp() {
 
     registerServiceWorker();
 
+    updateToolbarState();
+
     console.log(
-        "Grandma's Alphabet Book Version 2.6.0 is ready."
+        "Grandma's Alphabet Book Version 2.6.3 is ready."
     );
 }
 
@@ -3780,6 +3310,6 @@ if (
 
 /* =====================================================
    GRANDMA'S ALPHABET BOOK
-   VERSION 2.6.0
+   VERSION 2.6.3
    END OF FILE
    ===================================================== */
