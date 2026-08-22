@@ -2676,6 +2676,29 @@ function handleEditorChange(event) {
 function handleEditorClick(event) {
 
     /* ---------------------------------------------
+       WEB LINK
+       Tap a link to open the web page.
+       --------------------------------------------- */
+
+    const webLink =
+        event.target.closest(
+            "a[href]"
+        );
+
+    if (webLink) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        window.open(
+            webLink.href,
+            "_blank"
+        );
+
+        return;
+    }
+
+
+    /* ---------------------------------------------
        PHOTO
        Tap a photo to place the cursor directly
        after it. Backspace can then delete it.
