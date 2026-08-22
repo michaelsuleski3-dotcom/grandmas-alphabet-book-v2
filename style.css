@@ -614,15 +614,13 @@ input:focus-visible,
         solid
         rgba(112, 78, 45, 0.2);
    
-   background-color: var(--paper);
-
-    background:
-        linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, 0.48),
-            rgba(255, 255, 255, 0.06)
-        );
-}
+   background:
+    linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.48),
+        rgba(255, 255, 255, 0.06)
+    ),
+    var(--paper);
 
 .page-label {
     color: var(--muted-ink);
