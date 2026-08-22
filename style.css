@@ -625,7 +625,12 @@ input:focus-visible,
         rgba(255, 255, 255, 0.48),
         rgba(255, 255, 255, 0.06)
     ),
-    var(--paper);
+    linear-gradient(
+        to right,
+        #f5e7c9,
+        var(--paper) 35px,
+        var(--paper) 100%
+    );
 }
 .page-label {
     color: var(--muted-ink);
