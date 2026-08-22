@@ -629,10 +629,13 @@ input:focus-visible,
         to right,
         #f5e7c9,
         var(--paper) 35px,
-        var(--paper) 100%
+        var(--paper) calc(100% - 18px),
+        #f3e4c5 100%
     );
-   box-shadow:
-    inset 8px 0 14px rgba(121, 78, 32, 0.1);
+
+box-shadow:
+    inset 8px 0 14px rgba(121, 78, 32, 0.1),
+    inset -7px 0 14px rgba(88, 59, 28, 0.09);
 }
 .page-label {
     color: var(--muted-ink);
