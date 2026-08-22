@@ -635,7 +635,7 @@ input:focus-visible,
 
 box-shadow:
     inset 8px 0 14px rgba(121, 78, 32, 0.1),
-    inset -12px 0 18px rgba(121, 78, 32, 0.16);
+    inset -8px 0 14px rgba(121, 78, 32, 0.1);
 }
 .page-label {
     color: var(--muted-ink);
