@@ -616,6 +616,11 @@ input:focus-visible,
    
    background:
     linear-gradient(
+        90deg,
+        rgba(114, 74, 35, 0.13),
+        transparent 18px
+    ),
+    linear-gradient(
         to bottom,
         rgba(255, 255, 255, 0.48),
         rgba(255, 255, 255, 0.06)
