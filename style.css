@@ -523,8 +523,6 @@ input:focus-visible,
         1px
         solid
         rgba(91, 62, 35, 0.42);
-   
-   border-top: 0;
 
     border-radius: 12px 3px 3px 12px;
 
@@ -615,6 +613,8 @@ input:focus-visible,
         1px
         solid
         rgba(112, 78, 45, 0.2);
+   
+   background-color: var(--paper);
 
     background:
         linear-gradient(
